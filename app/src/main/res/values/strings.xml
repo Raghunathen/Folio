@@ -61,7 +61,7 @@
     <string name="sleep_timer_row_minutes">%1$d min</string>
     <string name="sleep_timer_row_song_end">Song End</string>
     <string name="settings_listening_stats">Listening Minutes Stats</string>
-    <string name="settings_listening_stats_summary">See how much you\'ve listened, and your top artists</string>
+    <string name="settings_listening_stats_summary">Total time listened, streaks, and days active</string>
     <string name="listening_stats_hours_played">Hours of Music Played</string>
     <string name="listening_stats_minutes_played">Minutes of Music Played</string>
     <string name="listening_stats_days_played">Days of Music Played</string>
@@ -162,6 +162,13 @@
     <string name="settings_skip_forward_seconds">Skip forward interval (seconds)</string>
     <string name="settings_skip_backward_seconds">Skip backward interval (seconds)</string>
     <string name="widget_description">Shows the current audiobook with quick playback controls.</string>
+    <string name="listening_stats_total_time">Total Time Listened</string>
+    <string name="listening_stats_current_streak">Current Streak</string>
+    <string name="listening_stats_longest_streak">Longest Streak</string>
+    <string name="listening_stats_days_active">Days With Listening</string>
+    <string name="listening_stats_streak_days_format">%1$d days</string>
+    <string name="listening_stats_duration_hm">%1$d h %2$d min</string>
+    <string name="listening_stats_duration_m">%1$d min</string>
     <string name="settings_content_based_color_summary">Enable album based color generation</string>
     <string name="settings_content_based_color">Content based colors</string>
     <string name="no_lyric_found">No lyric found</string>

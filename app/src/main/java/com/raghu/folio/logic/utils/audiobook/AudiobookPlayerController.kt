@@ -1,6 +1,7 @@
 package com.raghu.folio.logic.utils.audiobook
 
 import android.content.Context
+import android.os.SystemClock
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -16,6 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /**
  * Wraps a single [ExoPlayer] instance to play one audiobook's parts back-to-back as a single
@@ -39,6 +41,7 @@ class AudiobookPlayerController(
     private var chapters: List<Chapter> = emptyList()
     private var progressSaveJob: Job? = null
     private var sleepTimerJob: Job? = null
+    private var listeningAnchorElapsedMs: Long? = null
 
     /** Invoked (on the main thread) when an active sleep timer elapses and pauses playback. */
     var onSleepTimerElapsed: (() -> Unit)? = null
@@ -48,9 +51,11 @@ class AudiobookPlayerController(
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) {
+                listeningAnchorElapsedMs = SystemClock.elapsedRealtime()
                 startProgressSaveLoop()
             } else {
                 progressSaveJob?.cancel()
+                flushListeningTime()
                 saveProgressNow()
             }
         }
@@ -157,6 +162,7 @@ class AudiobookPlayerController(
         player.removeListener(playerListener)
         progressSaveJob?.cancel()
         sleepTimerJob?.cancel()
+        flushListeningTime()
         saveProgressNow()
         scope.cancel()
     }
@@ -167,7 +173,23 @@ class AudiobookPlayerController(
             while (true) {
                 delay(5_000L)
                 saveProgressNow()
+                flushListeningTime()
             }
+        }
+    }
+
+    /** Flushes wall-clock listening time accumulated since the last flush into today's
+     * [com.raghu.folio.logic.data.db.entity.ListeningStat] row. Not tied to playback speed - this
+     * is real-world time spent with the player active, matching how most listening-stats UIs work. */
+    private fun flushListeningTime() {
+        val anchor = listeningAnchorElapsedMs ?: return
+        val now = SystemClock.elapsedRealtime()
+        listeningAnchorElapsedMs = now
+        val deltaMs = now - anchor
+        if (deltaMs <= 0) return
+        val date = LocalDate.now().toString()
+        scope.launch(Dispatchers.IO) {
+            db.listeningStatDao().addListenedMs(date, deltaMs)
         }
     }
 

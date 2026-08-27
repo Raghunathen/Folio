@@ -10,6 +10,7 @@ import com.raghu.folio.logic.data.db.dao.BookPartDao
 import com.raghu.folio.logic.data.db.dao.BookmarkDao
 import com.raghu.folio.logic.data.db.dao.ChapterDao
 import com.raghu.folio.logic.data.db.dao.CollectionDao
+import com.raghu.folio.logic.data.db.dao.ListeningStatDao
 import com.raghu.folio.logic.data.db.dao.PlaybackProgressDao
 import com.raghu.folio.logic.data.db.entity.Author
 import com.raghu.folio.logic.data.db.entity.Book
@@ -18,6 +19,7 @@ import com.raghu.folio.logic.data.db.entity.Bookmark
 import com.raghu.folio.logic.data.db.entity.Chapter
 import com.raghu.folio.logic.data.db.entity.Collection
 import com.raghu.folio.logic.data.db.entity.CollectionBookCrossRef
+import com.raghu.folio.logic.data.db.entity.ListeningStat
 import com.raghu.folio.logic.data.db.entity.PlaybackProgress
 
 const val APP_DATABASE_FILE_NAME = "app.db"
@@ -32,8 +34,9 @@ const val APP_DATABASE_FILE_NAME = "app.db"
         Bookmark::class,
         Collection::class,
         CollectionBookCrossRef::class,
+        ListeningStat::class,
     ],
-    version = 4,
+    version = 5,
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -44,6 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun playbackProgressDao(): PlaybackProgressDao
     abstract fun bookmarkDao(): BookmarkDao
     abstract fun collectionDao(): CollectionDao
+    abstract fun listeningStatDao(): ListeningStatDao
 
     companion object {
         @Volatile
