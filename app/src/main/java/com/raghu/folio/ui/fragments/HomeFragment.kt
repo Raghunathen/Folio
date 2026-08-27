@@ -80,12 +80,14 @@ class HomeFragment : BaseFragment() {
         val continuing = libraryViewModel.continueListening.value ?: emptyList()
         if (continuing.isNotEmpty()) {
             rows += HomeListItem.Header(getString(R.string.continue_listening))
-            continuing.forEach { bookWithProgress ->
-                val book = bookWithProgress.book
-                rows += HomeListItem.BookRow(
-                    book, authorNameByBookId[book.bookId] ?: "", progressFraction(book)
-                )
-            }
+            rows += HomeListItem.ContinueShelf(
+                continuing.map { bookWithProgress ->
+                    val book = bookWithProgress.book
+                    HomeListItem.BookRow(
+                        book, authorNameByBookId[book.bookId] ?: "", progressFraction(book)
+                    )
+                }
+            )
         }
         authors.forEach { authorWithBooks ->
             if (authorWithBooks.books.isEmpty()) return@forEach
