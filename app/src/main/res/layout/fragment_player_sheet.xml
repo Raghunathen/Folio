@@ -10,14 +10,17 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/player_cover"
         android:layout_width="@dimen/book_cover_size_large"
         android:layout_height="@dimen/book_cover_size_large"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
         android:contentDescription="@null"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
+        app:strokeColor="?attr/contrast_colorOutline"
+        app:strokeWidth="0.5dp" />
 
     <TextView
         android:id="@+id/player_title"
@@ -44,6 +47,7 @@
 
     <SeekBar
         android:id="@+id/player_seekbar"
+        style="@style/MediaPlayer.ProgressBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

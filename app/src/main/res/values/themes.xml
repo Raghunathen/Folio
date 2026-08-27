@@ -146,7 +146,10 @@
     </style>
 
     <style name="BottomPlayerCornerShape">
-        <item name="cornerSize">0dp</item>
+        <item name="cornerSizeTopLeft">20dp</item>
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
     <style name="MediaPlayer.ProgressBar" parent="@style/Widget.AppCompat.ProgressBar.Horizontal">
