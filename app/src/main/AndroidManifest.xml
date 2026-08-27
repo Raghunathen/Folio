@@ -27,6 +27,8 @@
         android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
         android:minSdkVersion="34" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Show the weekly listening recap notification (Android 13 and later) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Remove ExoPlayer permission as we don't network playback for now -->
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"

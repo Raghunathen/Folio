@@ -19,6 +19,7 @@ package com.raghu.folio.logic
 
 import android.app.PendingIntent
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -92,6 +93,7 @@ class AudiobookPlaybackService : MediaSessionService() {
 
         private const val SHAKE_THRESHOLD_G = 2.2f
         private const val SHAKE_DEBOUNCE_MS = 1_500L
+        private const val PREF_SHAKE_TO_EXTEND = "sleep_timer_shake_to_extend"
     }
 
     private lateinit var player: ExoPlayer
@@ -124,9 +126,12 @@ class AudiobookPlaybackService : MediaSessionService() {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
-    /** Registers/unregisters [shakeListener] to match whether a sleep timer is currently active. */
+    /** Registers/unregisters [shakeListener] to match whether a sleep timer is active AND the
+     *  user has opted into shake-to-extend (off by default). */
     private fun updateShakeListenerRegistration() {
-        val shouldListen = controller.isSleepTimerActive()
+        val shakeEnabled = PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean(PREF_SHAKE_TO_EXTEND, false)
+        val shouldListen = shakeEnabled && controller.isSleepTimerActive()
         if (shouldListen && !shakeListenerRegistered) {
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
                 sensorManager.registerListener(shakeListener, it, SensorManager.SENSOR_DELAY_NORMAL)
@@ -136,6 +141,10 @@ class AudiobookPlaybackService : MediaSessionService() {
             sensorManager.unregisterListener(shakeListener)
             shakeListenerRegistered = false
         }
+    }
+
+    private val shakePrefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == PREF_SHAKE_TO_EXTEND) updateShakeListenerRegistration()
     }
 
     private val widgetProgressHandler = Handler(Looper.getMainLooper())
@@ -171,6 +180,7 @@ class AudiobookPlaybackService : MediaSessionService() {
             .build()
         controller = AudiobookPlayerController(this, player)
         controller.onSleepTimerElapsed = { updateShakeListenerRegistration() }
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(shakePrefListener)
 
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -307,6 +317,7 @@ class AudiobookPlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         widgetProgressHandler.removeCallbacks(widgetProgressRunnable)
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(shakePrefListener)
         if (shakeListenerRegistered) {
             sensorManager.unregisterListener(shakeListener)
             shakeListenerRegistered = false

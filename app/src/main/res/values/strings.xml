@@ -174,6 +174,17 @@
     <string name="listening_stats_streak_days_format">%1$d days</string>
     <string name="listening_stats_duration_hm">%1$d h %2$d min</string>
     <string name="listening_stats_duration_m">%1$d min</string>
+    <string name="listening_stats_past_week">Past 7 Days</string>
+    <string name="listening_stats_past_month">Past 30 Days</string>
+    <string name="listening_stats_past_6_months">Past 6 Months</string>
+    <string name="listening_stats_past_year">Past Year</string>
+    <string name="weekly_recap_notifications_title">Weekly Recap Notification</string>
+    <string name="weekly_recap_notifications_summary">Get a notification once a week summarizing your listening time</string>
+    <string name="weekly_recap_channel_name">Weekly Recap</string>
+    <string name="weekly_recap_title">Your Week in Listening</string>
+    <string name="weekly_recap_body">You listened for %1$s this week</string>
+    <string name="settings_shake_to_extend">Shake to Extend Sleep Timer</string>
+    <string name="settings_shake_to_extend_summary">While a sleep timer is running, shake your phone to add 10 more minutes</string>
     <string name="collections_title">Collections</string>
     <string name="new_collection">New Collection</string>
     <string name="new_collection_hint">Collection name</string>

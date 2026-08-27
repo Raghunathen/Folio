@@ -47,6 +47,7 @@ import coil3.size.pxOrElse
 import coil3.util.Logger
 import com.raghu.folio.BuildConfig
 import com.raghu.folio.R
+import com.raghu.folio.logic.notifications.WeeklyStatsWorker
 import com.raghu.folio.ui.BugHandlerActivity
 import java.io.File
 import java.io.IOException
@@ -120,6 +121,8 @@ class FolioApplication : Application(), SingletonImageLoader.Factory, Thread.Unc
                 val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                 nm.cancel(DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID)
             }
+
+            WeeklyStatsWorker.scheduleIfEnabled(this)
         }.start()
     }
 
