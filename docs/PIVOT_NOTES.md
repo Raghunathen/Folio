@@ -260,9 +260,16 @@ service (see below):
       (`ListeningStatsFragment`/`ListeningStatsTopFragment`, reachable from the existing
       "Listening Minutes Stats" entry in the main settings list) shows total time listened,
       current streak, longest streak, and days-with-listening as read-only preference rows.
-- [ ] Collections screen (Currently Listening / Favorites / custom shelves) - `Collection`/
-      `CollectionBookCrossRef` DB entities exist but there's no UI to view/manage them yet.
-      ← **next candidate, not started**
+- [x] Collections screen: `CollectionsFragment` (list of user collections + FAB to create new
+      ones via an `AlertDialog` with an `EditText`) and `CollectionDetailFragment` (a collection's
+      books as a cover grid, reusing `ContinueListeningAdapter`, tap-to-play). `PlayerSheetFragment`
+      gained an "Collections" button opening a multi-choice `AlertDialog` (checked state = current
+      membership via the new `CollectionDao.getCollectionIdsForBook`) to toggle a book's membership
+      across all collections, with a "New Collection" action to create one inline. Also fixed a
+      pre-existing gap: the Home toolbar had no menu wired up at all, so Settings (and therefore
+      the new Listening Stats screen) was unreachable in the running app - `home_menu.xml` trimmed
+      to Refresh/Collections/Settings (dropped stale music-era Equalizer/Exit items) and wired in
+      `HomeFragment`.
 - [ ] Full build + on-device smoke test (including verifying M4B chapter parsing and the new
       widget against real audiobook files/devices) — **cannot be done by the agent; needs the
       user's physical device**.
