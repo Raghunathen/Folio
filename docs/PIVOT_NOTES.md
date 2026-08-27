@@ -164,8 +164,8 @@ Implemented in `com.raghu.folio.logic.utils.audiobook`:
 
 ### Playback
 
-Core logic implemented in `com.raghu.folio.logic.utils.audiobook`, **not yet wired into a
-service/notification/lock-screen session** (see below):
+Core logic implemented in `com.raghu.folio.logic.utils.audiobook`, now wired into a real
+service (see below):
 - **`AudiobookTimeline`** — pure functions mapping between a book's overall (cross-part)
   position and (partIndex, positionInPart), plus chapter-at-position lookup. `BookPart` list is
   the source of truth for offsets (`startOffsetMs`/`durationMs`), computed once by the scanner.
@@ -177,15 +177,21 @@ service/notification/lock-screen session** (see below):
   (`startSleepTimer`/`cancelSleepTimer`). Persists `PlaybackProgress` (position, current part,
   speed) every 5s while playing and immediately on pause/speed-change/release.
 
-> **Why not wired into a service yet**: the old `FolioPlaybackService` (was
-> `GramophonePlaybackService`) is a `MediaLibraryService` deeply intertwined with the
-> still-present music UI (`PlayerBottomSheet`, `FullBottomSheet`, `MainActivity`, queue/session
-> commands, notification). Replacing it now would immediately break that UI's compilation before
-> the UI rewrite step exists to replace it. Building the tricky continuous-timeline/chapter/
-> speed/sleep-timer logic as a standalone, testable, non-service class first (this section) keeps
-> the project compiling; the next step is deleting the old service + UI together and wiring a new
-> `MediaLibraryService` around `AudiobookPlayerController` (foreground notification, lock-screen
-> controls) as part of the "remove music-only features" + "new UI" steps.
+> **Update**: now wired into a real service - **`AudiobookPlaybackService`**
+> (`com.raghu.folio.logic`), a `MediaSessionService` built fresh around `AudiobookPlayerController`
+> (ExoPlayer with `FolioRenderFactory`/`FolioMediaSourceFactory` reused for FFmpeg/codec support,
+> `AudioAttributes` content type `SPEECH` rather than `MUSIC` since that suits narrated audio
+> better). Exposes custom session commands: `audiobook_load_book`, `_skip_forward`,
+> `_skip_backward`, `_set_speed`, `_seek_chapter`, `_sleep_timer_start`/`_cancel`,
+> `_set_skip_silence`. Registered in `AndroidManifest.xml` **alongside** the old
+> `FolioPlaybackService` - it's inert until UI binds to it (none does yet). Verified with a full
+> `gradle :app:assembleDebug` (not just Kotlin compile, since this touches the manifest).
+>
+> The old `FolioPlaybackService` (was `GramophonePlaybackService`) is left alone for now since
+> it's deeply intertwined with the still-present music UI (`PlayerBottomSheet`, `FullBottomSheet`,
+> `MainActivity`, queue/session commands, notification) - deleting it would break that UI's
+> compilation before the new UI exists to replace it. Both services + both UIs will be swapped
+> over together as part of the "new UI" step.
 
 ## 6. Progress log
 
@@ -197,10 +203,14 @@ service/notification/lock-screen session** (see below):
       `SidecarMetadataReader`/`AudiobookLibraryPrefs`); build verified. UI trigger (folder picker
       screen) still needed - lands with the UI rewrite step.
 - [x] Playback core (continuous multi-part timeline, chapters, speed, sleep timer, skip
-      silence) as a standalone controller; build verified. Not yet wired into a
-      service/notification - lands with the next two steps below.
-- [ ] Remove music-only features (Genres, Lyrics, Dates-added); replace `FolioPlaybackService`
-      with a new `MediaLibraryService` built around `AudiobookPlayerController`. ← **next**
+      silence) as a standalone controller; build verified.
+- [x] `AudiobookPlaybackService` (new `MediaSessionService`) wired around the playback core,
+      registered alongside the old `FolioPlaybackService`; full `assembleDebug` verified.
+- [ ] Remove music-only UI (Genres, Lyrics, Dates-added, Song/Album/Artist/Playlist screens),
+      delete `FolioPlaybackService` + old DB entities (`MediaItem`/`Playlist`/`ListeningStat`),
+      and build a new Author/Book UI wired to `AudiobookPlaybackService`. This is a large,
+      breaking change done in one pass (see "why not wired into a service yet" above) - tracked
+      together with the "Build new UI" todo. ← **next**
 - [ ] New UI (Home shelves, Author/Book library, Book detail/player, Collections).
 - [ ] Bookmarks/sleep timer/series-detection/finished-state UI.
 - [ ] Home screen widget.
