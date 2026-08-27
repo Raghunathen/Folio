@@ -130,12 +130,29 @@ class MainActivity : AppCompatActivity() {
         playerViewModel.finishedEvent.observe(this) { bookId ->
             if (bookId == null) return@observe
             val finishedTitle = playerViewModel.title.value ?: ""
-            AlertDialog.Builder(this)
-                .setTitle(R.string.book_finished_title)
-                .setMessage(getString(R.string.book_finished_message, finishedTitle))
-                .setPositiveButton(android.R.string.ok) { _, _ -> playerViewModel.clearFinishedEvent() }
-                .setOnCancelListener { playerViewModel.clearFinishedEvent() }
-                .show()
+            lifecycleScope.launch {
+                val nextBook = withContext(Dispatchers.IO) {
+                    val db = AppDatabase.getInstance(this@MainActivity)
+                    val book = db.bookDao().getBookById(bookId)
+                    val seriesName = book?.seriesName
+                    val seriesIndex = book?.seriesIndex
+                    if (book != null && seriesName != null && seriesIndex != null) {
+                        db.bookDao().getNextInSeries(book.authorId, seriesName, seriesIndex)
+                    } else null
+                }
+                val dialog = AlertDialog.Builder(this@MainActivity)
+                    .setTitle(R.string.book_finished_title)
+                    .setMessage(getString(R.string.book_finished_message, finishedTitle))
+                    .setNegativeButton(android.R.string.ok) { _, _ -> playerViewModel.clearFinishedEvent() }
+                    .setOnCancelListener { playerViewModel.clearFinishedEvent() }
+                if (nextBook != null) {
+                    dialog.setPositiveButton(getString(R.string.play_next_in_series, nextBook.title)) { _, _ ->
+                        playerViewModel.clearFinishedEvent()
+                        playBook(nextBook.bookId)
+                    }
+                }
+                dialog.show()
+            }
             updateLibrary()
         }
     }

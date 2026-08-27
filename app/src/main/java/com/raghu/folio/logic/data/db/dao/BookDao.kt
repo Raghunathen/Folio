@@ -44,6 +44,19 @@ interface BookDao {
     @Query("SELECT * FROM `$BOOK_TABLE_NAME` WHERE `${Book.AUTHOR_ID_COLUMN}` = :authorId ORDER BY `${Book.SERIES_INDEX_COLUMN}` ASC, `${Book.SORT_TITLE_COLUMN}` ASC")
     fun getBooksByAuthor(authorId: Long): List<Book>
 
+    /** The next book in the same series (lowest [Book.SERIES_INDEX_COLUMN] greater than [seriesIndex]),
+     *  used to auto-offer continuing a series once the current book finishes. */
+    @Query(
+        """
+        SELECT * FROM `$BOOK_TABLE_NAME`
+        WHERE `${Book.AUTHOR_ID_COLUMN}` = :authorId AND `${Book.SERIES_NAME_COLUMN}` = :seriesName
+            AND `${Book.SERIES_INDEX_COLUMN}` > :seriesIndex
+        ORDER BY `${Book.SERIES_INDEX_COLUMN}` ASC
+        LIMIT 1
+        """
+    )
+    fun getNextInSeries(authorId: Long, seriesName: String, seriesIndex: Float): Book?
+
     @Transaction
     @Query("SELECT * FROM `$BOOK_TABLE_NAME` WHERE `${Book.BOOK_ID_COLUMN}` = :bookId")
     fun getBookWithParts(bookId: Long): BookWithParts?
