@@ -162,10 +162,30 @@ Implemented in `com.raghu.folio.logic.utils.audiobook`:
   no chapter list yet); placeholder cover generation for books with no art (planned: initials on
   a gradient, generated at UI-display time rather than stored as a file).
 
-### Playback (not yet implemented)
-Adapt `FolioPlaybackService` (was `GramophonePlaybackService`) to build a single continuous
-`ConcatenatingMediaSource`-equivalent per book from its parts, track absolute position across
-parts, expose chapter seeking, add sleep timer/skip-silence/speed persistence per book.
+### Playback
+
+Core logic implemented in `com.raghu.folio.logic.utils.audiobook`, **not yet wired into a
+service/notification/lock-screen session** (see below):
+- **`AudiobookTimeline`** — pure functions mapping between a book's overall (cross-part)
+  position and (partIndex, positionInPart), plus chapter-at-position lookup. `BookPart` list is
+  the source of truth for offsets (`startOffsetMs`/`durationMs`), computed once by the scanner.
+- **`AudiobookPlayerController`** — wraps a single `ExoPlayer`: loads a book's parts as a
+  playlist (`player.setMediaItems(...)`, one `MediaItem` per part file, played back-to-back by
+  ExoPlayer natively - no manual concatenation needed), exposes `seekToAbsoluteMs`/
+  `skipForward`/`skipBackward`/`seekToChapter`/`setPlaybackSpeed`/`setSkipSilenceEnabled`
+  (native `ExoPlayer.skipSilenceEnabled`) and a coroutine-based sleep timer
+  (`startSleepTimer`/`cancelSleepTimer`). Persists `PlaybackProgress` (position, current part,
+  speed) every 5s while playing and immediately on pause/speed-change/release.
+
+> **Why not wired into a service yet**: the old `FolioPlaybackService` (was
+> `GramophonePlaybackService`) is a `MediaLibraryService` deeply intertwined with the
+> still-present music UI (`PlayerBottomSheet`, `FullBottomSheet`, `MainActivity`, queue/session
+> commands, notification). Replacing it now would immediately break that UI's compilation before
+> the UI rewrite step exists to replace it. Building the tricky continuous-timeline/chapter/
+> speed/sleep-timer logic as a standalone, testable, non-service class first (this section) keeps
+> the project compiling; the next step is deleting the old service + UI together and wiring a new
+> `MediaLibraryService` around `AudiobookPlayerController` (foreground notification, lock-screen
+> controls) as part of the "remove music-only features" + "new UI" steps.
 
 ## 6. Progress log
 
@@ -176,8 +196,11 @@ parts, expose chapter seeking, add sleep timer/skip-silence/speed persistence pe
 - [x] SAF-based Audiobooks folder scanner engine (`AudiobookScanner`/`SeriesDetector`/
       `SidecarMetadataReader`/`AudiobookLibraryPrefs`); build verified. UI trigger (folder picker
       screen) still needed - lands with the UI rewrite step.
-- [ ] Playback service rewrite (continuous multi-part books, chapters, speed, sleep timer). ← **next**
-- [ ] Remove music-only features (Genres, Lyrics, Dates-added).
+- [x] Playback core (continuous multi-part timeline, chapters, speed, sleep timer, skip
+      silence) as a standalone controller; build verified. Not yet wired into a
+      service/notification - lands with the next two steps below.
+- [ ] Remove music-only features (Genres, Lyrics, Dates-added); replace `FolioPlaybackService`
+      with a new `MediaLibraryService` built around `AudiobookPlayerController`. ← **next**
 - [ ] New UI (Home shelves, Author/Book library, Book detail/player, Collections).
 - [ ] Bookmarks/sleep timer/series-detection/finished-state UI.
 - [ ] Home screen widget.
