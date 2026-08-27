@@ -124,11 +124,12 @@ New entities (package `com.raghu.folio.logic.data.db.entity`):
 `PlaylistWithMediaItem` are being removed since they were MediaStore-id-based and don't fit the
 SAF-URI-based book model.
 
-> **Status flag**: swapping the DB layer necessarily breaks compilation of the still-untouched
-> UI (adapters/fragments that reference `Playlist`/`MediaItem`/their DAOs for the old music
-> features) until the scanner + playback service + UI are rewritten in subsequent steps. This is
-> expected mid-rewrite breakage, not a mistake — see the todo list for sequencing. Each layer
-> will be re-verified with `gradle :app:compileDebugKotlin` once the layer above it is rewritten.
+> **Status**: implemented additively — the new tables were added to `AppDatabase` (version 2 →
+> 3, `fallbackToDestructiveMigration(true)` since there are no real installs yet) *alongside* the
+> still-present `MediaItem`/`Playlist`/`PlaylistMediaItemCrossRef` tables, so the project keeps
+> compiling right now. Those old tables/DAOs will be deleted together with the old music UI in
+> the "remove music-only features" + "new UI" steps, once nothing references them anymore.
+> Verified with `gradle :app:compileDebugKotlin` (KSP/Room schema validation passes).
 
 ### Scanning (not yet implemented)
 SAF folder picker over the Audiobooks root → walk `Author/Book/` two levels deep → build
@@ -145,9 +146,9 @@ parts, expose chapter seeking, add sleep timer/skip-silence/speed persistence pe
 
 - [x] Explored original architecture (Gramophone/Media3/Room/MediaStore).
 - [x] Renamed package/app to Folio; verified `gradle :app:compileDebugKotlin` succeeds.
-- [ ] New Room schema (Author/Book/BookPart/Chapter/Bookmark/PlaybackProgress/Collection) — in
-      progress.
-- [ ] SAF-based Audiobooks folder scanner.
+- [x] New Room schema (Author/Book/BookPart/Chapter/Bookmark/PlaybackProgress/Collection) added
+      additively; build verified.
+- [ ] SAF-based Audiobooks folder scanner. ← **next**
 - [ ] Playback service rewrite (continuous multi-part books, chapters, speed, sleep timer).
 - [ ] Remove music-only features (Genres, Lyrics, Dates-added).
 - [ ] New UI (Home shelves, Author/Book library, Book detail/player, Collections).
