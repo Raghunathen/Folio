@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Book cover -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,26 H78 V84 H30 Z" />
+    <!-- Spine fold (cut in background color) -->
+    <path
+        android:fillColor="#3F51B5"
+        android:pathData="M52,26 H56 V84 H52 Z" />
+    <!-- Bookmark ribbon notch (cut in background color) -->
+    <path
+        android:fillColor="#3F51B5"
+        android:pathData="M60,26 L68,26 L68,40 L64,34 L60,40 Z" />
+</vector>
