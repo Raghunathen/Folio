@@ -64,6 +64,7 @@ class AudiobookPlaybackService : MediaSessionService() {
         const val COMMAND_SLEEP_TIMER_START = "audiobook_sleep_timer_start"
         const val COMMAND_SLEEP_TIMER_CANCEL = "audiobook_sleep_timer_cancel"
         const val COMMAND_SET_SKIP_SILENCE = "audiobook_set_skip_silence"
+        const val COMMAND_SEEK_ABSOLUTE = "audiobook_seek_absolute"
 
         const val EXTRA_BOOK_ID = "book_id"
         const val EXTRA_SECONDS = "seconds"
@@ -71,6 +72,7 @@ class AudiobookPlaybackService : MediaSessionService() {
         const val EXTRA_CHAPTER_ID = "chapter_id"
         const val EXTRA_MINUTES = "minutes"
         const val EXTRA_ENABLED = "enabled"
+        const val EXTRA_POSITION_MS = "position_ms"
     }
 
     private lateinit var player: ExoPlayer
@@ -125,9 +127,11 @@ class AudiobookPlaybackService : MediaSessionService() {
             val bookWithParts = db.bookDao().getBookWithParts(bookId) ?: return@launch
             val chapters = db.chapterDao().getChaptersForBook(bookId)
             val progress = db.playbackProgressDao().getProgress(bookId)
+            val authorName = db.authorDao().getAuthorById(bookWithParts.book.authorId)?.name
             withContext(Dispatchers.Main) {
                 controller.load(
                     book = bookWithParts.book,
+                    authorName = authorName,
                     parts = bookWithParts.parts.sortedBy { it.partIndex },
                     chapters = chapters,
                     startPositionMs = progress?.positionMs ?: 0L,
@@ -153,6 +157,7 @@ class AudiobookPlaybackService : MediaSessionService() {
                 .add(SessionCommand(COMMAND_SLEEP_TIMER_START, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SLEEP_TIMER_CANCEL, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SET_SKIP_SILENCE, Bundle.EMPTY))
+                .add(SessionCommand(COMMAND_SEEK_ABSOLUTE, Bundle.EMPTY))
                 .build()
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(availableCommands)
@@ -184,6 +189,8 @@ class AudiobookPlaybackService : MediaSessionService() {
                 COMMAND_SLEEP_TIMER_CANCEL -> this@AudiobookPlaybackService.controller.cancelSleepTimer()
                 COMMAND_SET_SKIP_SILENCE -> this@AudiobookPlaybackService.controller
                     .setSkipSilenceEnabled(args.getBoolean(EXTRA_ENABLED, false))
+                COMMAND_SEEK_ABSOLUTE -> this@AudiobookPlaybackService.controller
+                    .seekToAbsoluteMs(args.getLong(EXTRA_POSITION_MS, 0L))
                 else -> return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED))
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))

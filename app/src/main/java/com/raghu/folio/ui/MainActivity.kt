@@ -21,11 +21,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import coil3.imageLoader
+import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,6 +37,7 @@ import com.raghu.folio.logic.data.db.AppDatabase
 import com.raghu.folio.logic.enableEdgeToEdgeProperly
 import com.raghu.folio.logic.postAtFrontOfQueueAsync
 import com.raghu.folio.logic.utils.audiobook.AudiobookScanner
+import com.raghu.folio.ui.fragments.PlayerSheetFragment
 
 /**
  * MainActivity:
@@ -46,6 +50,7 @@ import com.raghu.folio.logic.utils.audiobook.AudiobookScanner
 class MainActivity : AppCompatActivity() {
 
     val libraryViewModel: LibraryViewModel by viewModels()
+    val playerViewModel: PlayerViewModel by viewModels()
 
     private val handler = Handler(Looper.getMainLooper())
     private val reportFullyDrawnRunnable = Runnable { if (!ready) reportFullyDrawn() }
@@ -75,12 +80,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Loads [bookId] into the shared player and opens the full player bottom sheet. */
+    fun playBook(bookId: Long) {
+        playerViewModel.loadBook(bookId)
+        PlayerSheetFragment.newInstance(bookId).show(supportFragmentManager, "player_sheet")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition { !ready }
         enableEdgeToEdgeProperly()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         updateLibrary()
+        setUpMiniPlayer()
+        playerViewModel.connect()
+    }
+
+    private fun setUpMiniPlayer() {
+        val miniPlayer: MaterialCardView = findViewById(R.id.mini_player)
+        val titleView: TextView = findViewById(R.id.mini_player_title)
+        val authorView: TextView = findViewById(R.id.mini_player_author)
+        val playPauseButton: ImageButton = findViewById(R.id.mini_player_play_pause)
+
+        fun updateVisibility() {
+            miniPlayer.visibility =
+                if (playerViewModel.currentBookId != null) android.view.View.VISIBLE else android.view.View.GONE
+        }
+
+        playerViewModel.title.observe(this) {
+            titleView.text = it ?: ""
+            updateVisibility()
+        }
+        playerViewModel.author.observe(this) { authorView.text = it ?: "" }
+        playerViewModel.isPlaying.observe(this) { playing ->
+            playPauseButton.setImageResource(
+                if (playing) R.drawable.ic_apple_pause else R.drawable.ic_apple_play
+            )
+        }
+        playPauseButton.setOnClickListener { playerViewModel.playPause() }
+        miniPlayer.setOnClickListener {
+            playerViewModel.currentBookId?.let { bookId ->
+                PlayerSheetFragment.newInstance(bookId).show(supportFragmentManager, "player_sheet")
+            }
+        }
     }
 
     // https://twitter.com/Piwai/status/1529510076196630528
@@ -104,3 +146,4 @@ class MainActivity : AppCompatActivity() {
         imageLoader.memoryCache?.clear()
     }
 }
+

@@ -146,6 +146,16 @@
     <string name="choose_audiobooks_folder">Choose Audiobooks Folder</string>
     <string name="no_books_found">No audiobooks found. Choose a folder to scan.</string>
     <string name="continue_listening">Continue Listening</string>
+    <string name="pause">Pause</string>
+    <string name="skip_forward">Skip forward</string>
+    <string name="skip_backward">Skip backward</string>
+    <string name="playback_speed_value">%1$.2fx</string>
+    <string name="add_bookmark">Add Bookmark</string>
+    <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_label_hint">Bookmark label (optional)</string>
+    <string name="chapters">Chapters</string>
+    <string name="no_chapters">No chapters</string>
+    <string name="sleep_timer_cancel">Cancel Sleep Timer</string>
     <string name="settings_content_based_color_summary">Enable album based color generation</string>
     <string name="settings_content_based_color">Content based colors</string>
     <string name="no_lyric_found">No lyric found</string>

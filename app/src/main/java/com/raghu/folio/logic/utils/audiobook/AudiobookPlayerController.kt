@@ -2,6 +2,7 @@ package com.raghu.folio.logic.utils.audiobook
 
 import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.raghu.folio.logic.data.db.AppDatabase
@@ -61,12 +62,25 @@ class AudiobookPlayerController(
      * Loads [book]'s [parts] (sorted by `partIndex`) and [chapters] into the player and seeks to
      * [startPositionMs] (absolute, cross-part position - e.g. from a saved `PlaybackProgress`).
      */
-    fun load(book: Book, parts: List<BookPart>, chapters: List<Chapter>, startPositionMs: Long, speed: Float) {
+    fun load(
+        book: Book,
+        authorName: String?,
+        parts: List<BookPart>,
+        chapters: List<Chapter>,
+        startPositionMs: Long,
+        speed: Float,
+    ) {
         this.book = book
         this.parts = parts
         this.chapters = chapters
 
-        player.setMediaItems(parts.map { MediaItem.fromUri(it.fileUri) })
+        val metadata = MediaMetadata.Builder()
+            .setTitle(book.title)
+            .setArtist(authorName)
+            .build()
+        player.setMediaItems(parts.map {
+            MediaItem.Builder().setUri(it.fileUri).setMediaMetadata(metadata).build()
+        })
         player.setPlaybackSpeed(speed)
         player.prepare()
         seekToAbsoluteMs(startPositionMs)

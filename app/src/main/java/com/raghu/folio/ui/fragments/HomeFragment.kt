@@ -1,6 +1,5 @@
 package com.raghu.folio.ui.fragments
 
-import android.content.ComponentName
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,15 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionCommand
-import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import com.google.common.util.concurrent.MoreExecutors
 import com.raghu.folio.R
-import com.raghu.folio.logic.AudiobookPlaybackService
 import com.raghu.folio.logic.data.db.entity.Book
 import com.raghu.folio.logic.utils.audiobook.AudiobookLibraryPrefs
 import com.raghu.folio.ui.LibraryViewModel
@@ -27,12 +21,11 @@ import com.raghu.folio.ui.adapters.HomeListItem
 /**
  * Bare-bones placeholder home screen: lets the user pick the Audiobooks SAF folder, shows a
  * "Continue Listening" shelf plus books grouped by author, and starts playback of a tapped book
- * via [AudiobookPlaybackService]. This is intentionally minimal - full grid/cover UI comes later.
+ * via [MainActivity.playBook]. This is intentionally minimal - full grid/cover UI comes later.
  */
 class HomeFragment : BaseFragment() {
 
     private val libraryViewModel: LibraryViewModel by activityViewModels()
-    private var mediaController: MediaController? = null
     private lateinit var adapter: BookListAdapter
     private lateinit var emptyText: TextView
 
@@ -106,24 +99,10 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun playBook(book: Book) {
-        val context = requireContext().applicationContext
-        val token = SessionToken(
-            context, ComponentName(context, AudiobookPlaybackService::class.java)
-        )
-        val future = MediaController.Builder(context, token).buildAsync()
-        future.addListener({
-            val controller = future.get()
-            mediaController = controller
-            controller.sendCustomCommand(
-                SessionCommand(AudiobookPlaybackService.COMMAND_LOAD_BOOK, Bundle.EMPTY),
-                Bundle().apply { putLong(AudiobookPlaybackService.EXTRA_BOOK_ID, book.bookId) },
-            )
-        }, MoreExecutors.directExecutor())
+        (requireActivity() as MainActivity).playBook(book.bookId)
     }
 
     override fun onDestroyView() {
-        mediaController?.release()
-        mediaController = null
         super.onDestroyView()
     }
 }
