@@ -11,6 +11,7 @@ import com.raghu.folio.logic.data.db.dao.BookDao
 import com.raghu.folio.logic.data.db.entity.Author
 import com.raghu.folio.logic.data.db.entity.Book
 import com.raghu.folio.logic.data.db.entity.BookPart
+import com.raghu.folio.logic.data.db.entity.Chapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -18,6 +19,7 @@ import java.util.Locale
 private val AUDIO_EXTENSIONS = setOf(
     "mp3", "m4a", "m4b", "aac", "flac", "ogg", "opus", "wav", "wma"
 )
+private val M4B_EXTENSIONS = setOf("m4a", "m4b")
 
 data class ScanSummary(val authors: Int, val books: Int, val parts: Int)
 
@@ -113,13 +115,29 @@ object AudiobookScanner {
                 // in-progress book. Acceptable for now since rescans only happen on explicit user
                 // action; revisit once the scanner is wired into a background refresh flow.
                 partDao.deletePartsForBook(bookId)
-                partDao.insertParts(parts.map { it.copy(bookId = bookId) })
-                partCount += parts.size
-
-                // TODO(pivot): parse real M4B chapter atoms / chapter text tracks here for
-                // single-file books (see docs/PIVOT_NOTES.md). Left empty for now - the book is
-                // still fully playable/seekable without synthetic chapters.
                 chapterDao.deleteChaptersForBook(bookId)
+                val chapters = mutableListOf<Chapter>()
+                if (parts.size == 1 && isM4bLike(audioFiles[0].name)) {
+                    val firstPart = parts[0].copy(bookId = bookId)
+                    val partId = partDao.insertPart(firstPart)
+                    val entries = M4bChapterParser.parseChapters(contentResolver, audioFiles[0].uri)
+                    entries.forEachIndexed { index, entry ->
+                        val end = entries.getOrNull(index + 1)?.startMs ?: offsetMs
+                        if (end > entry.startMs) {
+                            chapters += Chapter(
+                                bookId = bookId,
+                                partId = partId,
+                                title = entry.title.ifBlank { "Chapter ${index + 1}" },
+                                startMs = entry.startMs,
+                                endMs = end,
+                            )
+                        }
+                    }
+                } else {
+                    partDao.insertParts(parts.map { it.copy(bookId = bookId) })
+                }
+                partCount += parts.size
+                if (chapters.isNotEmpty()) chapterDao.insertChapters(chapters)
             }
         }
 
@@ -131,6 +149,9 @@ object AudiobookScanner {
 
     private fun isAudioFile(name: String?): Boolean =
         name?.substringAfterLast('.', "")?.lowercase(Locale.ROOT) in AUDIO_EXTENSIONS
+
+    private fun isM4bLike(name: String?): Boolean =
+        name?.substringAfterLast('.', "")?.lowercase(Locale.ROOT) in M4B_EXTENSIONS
 
     private fun upsertAuthor(dao: AuthorDao, folderUri: String, name: String, now: Long): Long {
         dao.getAuthorByFolderUri(folderUri)?.let { return it.authorId }
