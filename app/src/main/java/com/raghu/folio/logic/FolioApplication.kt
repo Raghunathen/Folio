@@ -22,9 +22,6 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.content.SharedPreferences
 import android.media.ThumbnailUtils
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
-import android.os.StrictMode.VmPolicy
 import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
@@ -82,17 +79,9 @@ class FolioApplication : Application(), SingletonImageLoader.Factory, Thread.Unc
             }
             .build())
 
-        if (BuildConfig.DEBUG) {
-            // Use StrictMode to find anti-pattern issues
-            StrictMode.setThreadPolicy(
-                ThreadPolicy.Builder()
-                    .detectAll().permitDiskReads() // permit disk reads due to media3 setMetadata() TODO extra player thread
-                    .penaltyLog().penaltyDialog().build())
-            StrictMode.setVmPolicy(
-                VmPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog().penaltyDeath().build())
-        }
+        // StrictMode disabled - was flooding this device with a dialog from OEM (ColorOS) system
+        // code (com.oplus.uifirst.OplusUIFirstManager), not app code. Re-enable if needed to debug
+        // real anti-pattern issues.
 
         // This is a separate thread to avoid disk read on main thread and improve startup time
         Thread {
