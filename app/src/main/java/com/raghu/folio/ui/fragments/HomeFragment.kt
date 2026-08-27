@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.raghu.folio.R
 import com.raghu.folio.logic.data.db.entity.Book
@@ -17,6 +18,7 @@ import com.raghu.folio.ui.LibraryViewModel
 import com.raghu.folio.ui.MainActivity
 import com.raghu.folio.ui.adapters.BookListAdapter
 import com.raghu.folio.ui.adapters.HomeListItem
+import com.raghu.folio.ui.fragments.settings.MainSettingsFragment
 
 /**
  * Bare-bones placeholder home screen: lets the user pick the Audiobooks SAF folder, shows a
@@ -56,6 +58,27 @@ class HomeFragment : BaseFragment() {
 
         view.findViewById<MaterialButton>(R.id.choose_folder_button).setOnClickListener {
             pickFolder.launch(AudiobookLibraryPrefs.getRootUri(requireContext()))
+        }
+
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.inflateMenu(R.menu.home_menu)
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.refresh -> {
+                    (requireActivity() as MainActivity).updateLibrary()
+                    true
+                }
+                R.id.settings -> {
+                    requireActivity().supportFragmentManager
+                        .beginTransaction()
+                        .addToBackStack(System.currentTimeMillis().toString())
+                        .hide(this)
+                        .add(R.id.container, MainSettingsFragment())
+                        .commit()
+                    true
+                }
+                else -> false
+            }
         }
 
         libraryViewModel.authorsWithBooks.observe(viewLifecycleOwner) { rebuildList() }
