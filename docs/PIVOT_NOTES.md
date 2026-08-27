@@ -247,9 +247,22 @@ service (see below):
       `onIsPlayingChanged`/`onMediaMetadataChanged`/book load, plus a 20s periodic tick while
       playing (so the progress bar drifts along without per-second updates/battery cost); button
       taps open a short-lived `MediaController` connection to send the command and release.
-- [ ] New UI polish (Author/Book library grid, Collections screen) — Home screen is still a
-      sectioned list of text rows, not a cover grid. ← **next candidate, not started**
-- [ ] Listening stats UI.
+- [x] New UI polish: "Continue Listening" is a horizontal cover-card shelf
+      (`item_continue_card.xml` + `ContinueListeningAdapter`, 120dp Apple-Books-style cards), and
+      each author's books render as a wrapping cover-card grid (`item_home_author_grid.xml`, a
+      nested `GridLayoutManager` RecyclerView reusing `ContinueListeningAdapter`, 3 columns,
+      nested scrolling disabled) instead of plain text rows. A dedicated Collections screen is
+      still not built.
+- [x] Listening stats: new `ListeningStat` Room entity/DAO (date-keyed daily ms-listened rows,
+      `AppDatabase` bumped to version 5). `AudiobookPlayerController` tracks wall-clock listening
+      time via a `SystemClock.elapsedRealtime()` anchor set when `isPlaying` becomes true, flushed
+      to today's row on pause and on every existing 5s `progressSaveJob` tick. New settings screen
+      (`ListeningStatsFragment`/`ListeningStatsTopFragment`, reachable from the existing
+      "Listening Minutes Stats" entry in the main settings list) shows total time listened,
+      current streak, longest streak, and days-with-listening as read-only preference rows.
+- [ ] Collections screen (Currently Listening / Favorites / custom shelves) - `Collection`/
+      `CollectionBookCrossRef` DB entities exist but there's no UI to view/manage them yet.
+      ← **next candidate, not started**
 - [ ] Full build + on-device smoke test (including verifying M4B chapter parsing and the new
       widget against real audiobook files/devices) — **cannot be done by the agent; needs the
       user's physical device**.
