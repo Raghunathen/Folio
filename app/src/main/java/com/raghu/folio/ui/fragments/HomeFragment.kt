@@ -22,16 +22,19 @@ import com.raghu.folio.logic.utils.audiobook.AudiobookLibraryPrefs
 import com.raghu.folio.ui.LibraryViewModel
 import com.raghu.folio.ui.MainActivity
 import com.raghu.folio.ui.adapters.BookListAdapter
+import com.raghu.folio.ui.adapters.HomeListItem
 
 /**
- * Bare-bones placeholder home screen: lets the user pick the Audiobooks SAF folder, shows a flat
- * list of scanned books, and starts playback of a tapped book via [AudiobookPlaybackService].
- * This is intentionally minimal - full Author/Book browsing UI comes later.
+ * Bare-bones placeholder home screen: lets the user pick the Audiobooks SAF folder, shows a
+ * "Continue Listening" shelf plus books grouped by author, and starts playback of a tapped book
+ * via [AudiobookPlaybackService]. This is intentionally minimal - full grid/cover UI comes later.
  */
 class HomeFragment : BaseFragment() {
 
     private val libraryViewModel: LibraryViewModel by activityViewModels()
     private var mediaController: MediaController? = null
+    private lateinit var adapter: BookListAdapter
+    private lateinit var emptyText: TextView
 
     private val pickFolder = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
@@ -52,9 +55,9 @@ class HomeFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val emptyText = view.findViewById<TextView>(R.id.empty_text)
+        emptyText = view.findViewById(R.id.empty_text)
         val recyclerView = view.findViewById<RecyclerView>(R.id.book_list)
-        val adapter = BookListAdapter { book -> playBook(book) }
+        adapter = BookListAdapter { book -> playBook(book) }
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
@@ -62,13 +65,44 @@ class HomeFragment : BaseFragment() {
             pickFolder.launch(AudiobookLibraryPrefs.getRootUri(requireContext()))
         }
 
-        libraryViewModel.authorsWithBooks.observe(viewLifecycleOwner) { authors ->
-            val rows = authors.flatMap { authorWithBooks ->
-                authorWithBooks.books.map { it to authorWithBooks.author.name }
-            }
-            adapter.submitList(rows)
-            emptyText.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
+        libraryViewModel.authorsWithBooks.observe(viewLifecycleOwner) { rebuildList() }
+        libraryViewModel.allBooksWithProgress.observe(viewLifecycleOwner) { rebuildList() }
+        libraryViewModel.continueListening.observe(viewLifecycleOwner) { rebuildList() }
+    }
+
+    private fun rebuildList() {
+        val authors = libraryViewModel.authorsWithBooks.value ?: return
+        val progressByBookId = (libraryViewModel.allBooksWithProgress.value ?: emptyList())
+            .associate { it.book.bookId to it.progress }
+        val authorNameByBookId = authors
+            .flatMap { authorWithBooks -> authorWithBooks.books.map { it.bookId to authorWithBooks.author.name } }
+            .toMap()
+
+        fun progressFraction(book: Book): Float? {
+            val progress = progressByBookId[book.bookId] ?: return null
+            return if (book.durationMs > 0) progress.positionMs.toFloat() / book.durationMs else null
         }
+
+        val rows = mutableListOf<HomeListItem>()
+        val continuing = libraryViewModel.continueListening.value ?: emptyList()
+        if (continuing.isNotEmpty()) {
+            rows += HomeListItem.Header(getString(R.string.continue_listening))
+            continuing.forEach { bookWithProgress ->
+                val book = bookWithProgress.book
+                rows += HomeListItem.BookRow(
+                    book, authorNameByBookId[book.bookId] ?: "", progressFraction(book)
+                )
+            }
+        }
+        authors.forEach { authorWithBooks ->
+            if (authorWithBooks.books.isEmpty()) return@forEach
+            rows += HomeListItem.Header(authorWithBooks.author.name)
+            authorWithBooks.books.forEach { book ->
+                rows += HomeListItem.BookRow(book, authorWithBooks.author.name, progressFraction(book))
+            }
+        }
+        adapter.submitList(rows)
+        emptyText.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun playBook(book: Book) {

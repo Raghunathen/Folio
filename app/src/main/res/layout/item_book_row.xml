@@ -24,4 +24,15 @@
         android:textAppearance="?attr/textAppearanceBodyMedium"
         tools:text="Author name" />
 
+    <ProgressBar
+        android:id="@+id/book_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:max="100"
+        android:visibility="gone"
+        tools:progress="40"
+        tools:visibility="visible" />
+
 </LinearLayout>
