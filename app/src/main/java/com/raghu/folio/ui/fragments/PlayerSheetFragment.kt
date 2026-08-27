@@ -7,12 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil3.asImage
+import coil3.load
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.raghu.folio.R
@@ -20,6 +23,7 @@ import com.raghu.folio.logic.data.db.AppDatabase
 import com.raghu.folio.logic.data.db.entity.Bookmark
 import com.raghu.folio.ui.PlayerViewModel
 import com.raghu.folio.ui.adapters.ChapterAdapter
+import com.raghu.folio.ui.util.CoverPlaceholderGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,6 +59,8 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
 
         val titleView: TextView = view.findViewById(R.id.player_title)
         val authorView: TextView = view.findViewById(R.id.player_author)
+        val descriptionView: TextView = view.findViewById(R.id.player_description)
+        val coverView: ImageView = view.findViewById(R.id.player_cover)
         val seekBar: SeekBar = view.findViewById(R.id.player_seekbar)
         val positionText: TextView = view.findViewById(R.id.player_position_text)
         val durationText: TextView = view.findViewById(R.id.player_duration_text)
@@ -122,6 +128,31 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
         bookmarkButton.setOnClickListener { showAddBookmarkDialog() }
 
         loadChapters()
+        loadBookDetails(coverView, descriptionView)
+    }
+
+    private fun loadBookDetails(coverView: ImageView, descriptionView: TextView) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val book = withContext(Dispatchers.IO) {
+                AppDatabase.getInstance(requireContext()).bookDao().getBookById(bookId)
+            } ?: return@launch
+            val placeholder = CoverPlaceholderGenerator.generate(
+                coverView.context, book.title,
+                resources.getDimensionPixelSize(R.dimen.book_cover_size_large)
+            )
+            if (book.coverUri != null) {
+                coverView.load(book.coverUri) {
+                    placeholder(placeholder.asImage())
+                    error(placeholder.asImage())
+                }
+            } else {
+                coverView.setImageDrawable(placeholder)
+            }
+            if (!book.description.isNullOrBlank()) {
+                descriptionView.text = book.description
+                descriptionView.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun loadChapters() {

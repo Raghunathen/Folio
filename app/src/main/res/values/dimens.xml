@@ -6,6 +6,8 @@
     <dimen name="media_seekbar_progress_stroke_width">3.4dp</dimen>
     <dimen name="list_round_corner_size">0dp</dimen>
     <dimen name="grid_round_corner_size">0dp</dimen>
+    <dimen name="book_cover_size">56dp</dimen>
+    <dimen name="book_cover_size_large">120dp</dimen>
     <dimen name="tab_layout_content_padding">12dp</dimen>
     <dimen name="grid_card_side_padding">10dp</dimen>
     <dimen name="lyric_top_padding">36dp</dimen>
