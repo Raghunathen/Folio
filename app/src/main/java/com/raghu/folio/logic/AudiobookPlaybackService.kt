@@ -31,6 +31,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import androidx.preference.PreferenceManager
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.raghu.folio.R
@@ -136,6 +137,10 @@ class AudiobookPlaybackService : MediaSessionService() {
                     chapters = chapters,
                     startPositionMs = progress?.positionMs ?: 0L,
                     speed = progress?.playbackSpeed ?: 1f,
+                )
+                controller.setSkipSilenceEnabled(
+                    PreferenceManager.getDefaultSharedPreferences(this@AudiobookPlaybackService)
+                        .getBoolean("skip_silence", false)
                 )
                 controller.play()
             }

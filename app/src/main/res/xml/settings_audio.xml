@@ -44,6 +44,32 @@
 
     <PreferenceCategory
         android:layout="@layout/preference_category_md"
+        android:title="@string/settings_category_audiobook_playback">
+
+        <SeekBarPreference
+            android:defaultValue="30"
+            android:key="skip_forward_seconds"
+            android:layout="@layout/preference_seekbar"
+            android:max="60"
+            android:title="@string/settings_skip_forward_seconds"
+            app:iconSpaceReserved="false"
+            app:min="5"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            android:defaultValue="15"
+            android:key="skip_backward_seconds"
+            android:layout="@layout/preference_seekbar"
+            android:max="60"
+            android:title="@string/settings_skip_backward_seconds"
+            app:iconSpaceReserved="false"
+            app:min="5"
+            app:showSeekBarValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_md"
         android:title="@string/settings_category_misc">
 
         <SwitchPreferenceCompat

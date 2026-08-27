@@ -12,6 +12,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
+import androidx.preference.PreferenceManager
 import com.google.common.util.concurrent.MoreExecutors
 import com.raghu.folio.logic.AudiobookPlaybackService
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_LOAD_BOOK
@@ -110,11 +111,19 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         if (c.isPlaying) c.pause() else c.play()
     }
 
-    fun skipForward(seconds: Int = 30) =
+    fun skipForward(seconds: Int = defaultSkipForwardSeconds()) =
         sendCommand(COMMAND_SKIP_FORWARD, Bundle().apply { putInt(EXTRA_SECONDS, seconds) })
 
-    fun skipBackward(seconds: Int = 15) =
+    fun skipBackward(seconds: Int = defaultSkipBackwardSeconds()) =
         sendCommand(COMMAND_SKIP_BACKWARD, Bundle().apply { putInt(EXTRA_SECONDS, seconds) })
+
+    private fun defaultSkipForwardSeconds(): Int =
+        PreferenceManager.getDefaultSharedPreferences(getApplication())
+            .getInt("skip_forward_seconds", 30)
+
+    private fun defaultSkipBackwardSeconds(): Int =
+        PreferenceManager.getDefaultSharedPreferences(getApplication())
+            .getInt("skip_backward_seconds", 15)
 
     fun seekAbsolute(positionMs: Long) =
         sendCommand(COMMAND_SEEK_ABSOLUTE, Bundle().apply { putLong(EXTRA_POSITION_MS, positionMs) })
