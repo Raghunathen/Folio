@@ -84,6 +84,8 @@ class AudiobookPlayerController(
 
     fun currentChapter(): Chapter? = AudiobookTimeline.chapterAt(chapters, currentAbsolutePositionMs())
 
+    fun currentChapters(): List<Chapter> = chapters
+
     fun totalDurationMs(): Long = AudiobookTimeline.totalDurationMs(parts)
 
     fun seekToAbsoluteMs(absoluteMs: Long) {
