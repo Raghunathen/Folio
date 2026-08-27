@@ -33,4 +33,6 @@ class LibraryViewModel : ViewModel() {
     val allBooksWithProgress: MutableLiveData<List<BookWithProgress>> = MutableLiveData()
     val continueListening: MutableLiveData<List<BookWithProgress>> = MutableLiveData()
     val collections: MutableLiveData<List<CollectionWithBooks>> = MutableLiveData()
+    /** True while [com.raghu.folio.logic.utils.audiobook.AudiobookScanner] is walking the SAF tree. */
+    val isScanning: MutableLiveData<Boolean> = MutableLiveData(false)
 }

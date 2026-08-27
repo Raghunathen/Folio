@@ -147,8 +147,14 @@
     <string name="default_time" translatable="false">0:00</string>
     <string name="upper_folder" translatable="false">..</string>
     <string name="now_playing">Now playing</string>
-    <string name="choose_audiobooks_folder">Choose Audiobooks Folder</string>
+    <string name="choose_audiobooks_folder">Choose Folder</string>
     <string name="no_books_found">No audiobooks found. Choose a folder to scan.</string>
+    <string name="no_audiobooks_folder_title">No Audiobooks Folder</string>
+    <string name="no_audiobooks_folder_subtitle">Choose the folder where your audiobooks are stored to build your library.</string>
+    <string name="empty_library_title">No Audiobooks Found</string>
+    <string name="empty_library_subtitle">We couldn\u2019t find any audiobooks in this folder. Try choosing a different one.</string>
+    <string name="change_folder">Change Folder</string>
+    <string name="scanning_library">Adding your books\u2026</string>
     <string name="continue_listening">Continue Listening</string>
     <string name="pause">Pause</string>
     <string name="skip_forward">Skip forward</string>

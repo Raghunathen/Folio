@@ -62,9 +62,11 @@ class MainActivity : AppCompatActivity() {
     fun updateLibrary(then: (() -> Unit)? = null) {
         // If library load takes more than 3s, exit splash to avoid ANR.
         if (!ready) handler.postDelayed(reportFullyDrawnRunnable, 3000)
+        libraryViewModel.isScanning.value = true
         lifecycleScope.launch {
             AudiobookScanner.scanLibrary(this@MainActivity)
             refreshLibraryViewModel()
+            libraryViewModel.isScanning.value = false
             if (!ready) reportFullyDrawn()
             then?.invoke()
         }

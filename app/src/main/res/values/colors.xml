@@ -37,18 +37,18 @@
     <color name="contrast_tertiaryOverlayColor">#0DFFFFFF</color>
 
     <!-- Fallback -->
-    <color name="md_theme_primary">#000000</color>
+    <color name="md_theme_primary">#FA233B</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
-    <color name="md_theme_primaryContainer">#262626</color>
-    <color name="md_theme_onPrimaryContainer">#B1B1B1</color>
+    <color name="md_theme_primaryContainer">#FFD9DC</color>
+    <color name="md_theme_onPrimaryContainer">#400010</color>
     <color name="md_theme_secondary">#5E5E5E</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
     <color name="md_theme_secondaryContainer">#E6E6E6</color>
     <color name="md_theme_onSecondaryContainer">#4A4A4A</color>
-    <color name="md_theme_tertiary">#000000</color>
+    <color name="md_theme_tertiary">#FA233B</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
-    <color name="md_theme_tertiaryContainer">#262626</color>
-    <color name="md_theme_onTertiaryContainer">#B1B1B1</color>
+    <color name="md_theme_tertiaryContainer">#FFD9DC</color>
+    <color name="md_theme_onTertiaryContainer">#400010</color>
     <color name="md_theme_error">#BA1A1A</color>
     <color name="md_theme_onError">#FFFFFF</color>
     <color name="md_theme_errorContainer">#FFDAD6</color>

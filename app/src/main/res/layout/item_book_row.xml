@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,13 +12,16 @@
     android:paddingHorizontal="16dp"
     android:paddingVertical="12dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/book_cover"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginEnd="12dp"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
+        app:strokeColor="?attr/contrast_colorOutline"
+        app:strokeWidth="0.5dp"
         tools:src="@drawable/ic_default_cover" />
 
     <LinearLayout
@@ -30,14 +34,21 @@
             android:id="@+id/book_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/contrast_colorOnSurface"
+            android:textFontWeight="600"
             tools:text="Book title" />
 
         <TextView
             android:id="@+id/book_author"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/contrast_colorOnSurfaceSecondary"
             tools:text="Author name" />
 
         <ProgressBar
