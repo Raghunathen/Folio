@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FadingVerticalEdgeLayout">
+        <attr name="fel_edge" format="integer">
+            <flag name="top" value="1" />
+            <flag name="bottom" value="2" />
+            <flag name="left" value="4" />
+            <flag name="right" value="8" />
+        </attr>
+        <attr name="fel_size_top" format="dimension" />
+        <attr name="fel_size_bottom" format="dimension" />
+        <attr name="fel_size_left" format="dimension" />
+        <attr name="fel_size_right" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="ViewPager2">
+        <attr name="android:orientation" />
+    </declare-styleable>
+
+    <!--
+      General-UI color tokens. These default to the static @color/contrast_* palette,
+      but get remapped to the live Material3 attributes by ThemeOverlay.App.Dynamic
+      when the user picks "Dynamic" (Material You) in Appearance settings.
+      Deliberately NOT used by the full player / lyrics screens, whose colors are
+      derived from album art instead of the system wallpaper.
+    -->
+    <attr name="contrast_themeColor" format="color" />
+    <attr name="contrast_colorOnSurface" format="color" />
+    <attr name="contrast_colorBackground" format="color" />
+    <attr name="contrast_colorBackgroundElevated" format="color" />
+    <attr name="contrast_colorBackgroundBottomNav" format="color" />
+    <attr name="contrast_colorBackgroundContainer" format="color" />
+    <attr name="contrast_colorOnSurfaceFainted" format="color" />
+    <attr name="contrast_colorOnSurfaceSecondary" format="color" />
+    <attr name="contrast_colorOutline" format="color" />
+    <attr name="contrast_listBackground" format="color" />
+    <attr name="contrast_cardBackground" format="color" />
+    <attr name="contrast_listButtonTint" format="color" />
+</resources>

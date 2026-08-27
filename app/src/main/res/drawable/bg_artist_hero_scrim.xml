@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom-up fade from the page background to transparent, so the artist name sitting over the
+     hero image stays readable regardless of how bright that image happens to be. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="@color/artist_hero_scrim_end"
+        android:endColor="@color/artist_hero_scrim_start"
+        android:type="linear" />
+</shape>

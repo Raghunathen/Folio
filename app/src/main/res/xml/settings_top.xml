@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~     Copyright (C) 2024 Akane Foundation
+  ~
+  ~     Gramophone is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     (at your option) any later version.
+  ~
+  ~     Gramophone is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        android:icon="@drawable/ic_palette"
+        android:key="appearance"
+        android:layout="@layout/preference_basic"
+        android:summary="@string/settings_appearance_summary"
+        android:title="@string/settings_category_appearance" />
+
+    <Preference
+        android:icon="@drawable/ic_manufacturing"
+        android:key="behavior"
+        android:layout="@layout/preference_basic"
+        android:summary="@string/settings_behavior_summary"
+        android:title="@string/settings_category_behavior" />
+
+    <Preference
+        android:icon="@drawable/ic_dashboard_customize"
+        android:key="personalization"
+        android:layout="@layout/preference_basic"
+        android:summary="@string/settings_customization_summary"
+        android:title="@string/settings_customization"
+        app:isPreferenceVisible="false" />
+
+    <Preference
+        android:icon="@drawable/ic_headphones"
+        android:key="audio"
+        android:layout="@layout/preference_basic"
+        android:summary="@string/settings_player_options_summary"
+        android:title="@string/settings_player_options" />
+
+    <Preference
+        android:icon="@drawable/ic_bar_chart_24dp"
+        android:key="listening_stats"
+        android:layout="@layout/preference_basic"
+        android:summary="@string/settings_listening_stats_summary"
+        android:title="@string/settings_listening_stats" />
+
+</PreferenceScreen>

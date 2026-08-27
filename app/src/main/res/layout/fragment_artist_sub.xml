@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Artist page: the artist photo *is* the expanded app bar. Scrolling collapses it into a normal
+     toolbar carrying the artist's name, the way Apple Music does it. Using CollapsingToolbarLayout
+     rather than a header row inside the RecyclerView means the image is never recycled or rebound
+     mid-scroll, and the title cross-fade is handled by the framework. -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/contrast_colorBackground">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbarlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/contrast_colorBackground"
+        app:liftOnScroll="false">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsingtoolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/artist_hero_height"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.App.TitleLarge"
+            app:collapsedTitleTextColor="?attr/contrast_colorOnSurface"
+            app:contentScrim="?attr/contrast_colorBackground"
+            app:expandedTitleMarginBottom="16dp"
+            app:expandedTitleMarginEnd="20dp"
+            app:expandedTitleMarginStart="20dp"
+            app:expandedTitleTextAppearance="@style/TextAppearance.App.HeadlineLarge"
+            app:expandedTitleTextColor="?attr/contrast_colorOnSurface"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:maxLines="2"
+            app:titleCollapseMode="scale">
+
+            <ImageView
+                android:id="@+id/artistImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.6"
+                tools:src="@drawable/ic_default_cover_artist" />
+
+            <!-- Keeps the expanded name readable over bright photos. Not parallaxed, so it stays
+                 anchored behind the title rather than drifting away from it. -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_artist_hero_scrim" />
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:elevation="0dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                app:layout_collapseMode="pin"
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:navigationIconTint="?attr/contrast_themeColor" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include
+        layout="@layout/fragment_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

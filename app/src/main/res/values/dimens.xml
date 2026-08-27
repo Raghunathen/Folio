@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="media_seekbar_progress_wavelength">27dp</dimen>
+    <dimen name="media_seekbar_progress_amplitude">2.7dp</dimen>
+    <dimen name="media_seekbar_progress_phase">8dp</dimen>
+    <dimen name="media_seekbar_progress_stroke_width">3.4dp</dimen>
+    <dimen name="list_round_corner_size">0dp</dimen>
+    <dimen name="grid_round_corner_size">0dp</dimen>
+    <dimen name="tab_layout_content_padding">12dp</dimen>
+    <dimen name="grid_card_side_padding">10dp</dimen>
+    <dimen name="lyric_top_padding">36dp</dimen>
+    <dimen name="lyric_bottom_padding">612dp</dimen>
+    <!-- https://github.com/zhanghai/AndroidFastScroll/issues/3 -->
+    <dimen name="afs_min_touch_target_size">24dp</dimen>
+    <dimen name="general_side_padding_left">16dp</dimen>
+    <dimen name="decor_height">48dp</dimen>
+    <dimen name="list_height">66dp</dimen>
+    <dimen name="list_height_larger">80dp</dimen>
+    <dimen name="grid_card_label_height">45dp</dimen>
+    <dimen name="grid_card_margin_top">8dp</dimen>
+    <dimen name="grid_card_margin_label">7.5dp</dimen>
+    <dimen name="grid_card_padding_bottom">12dp</dimen>
+    <dimen name="afs_md2_popup_min_width">78dp</dimen>
+    <dimen name="afs_md2_popup_min_height">64dp</dimen>
+    <dimen name="afs_md2_popup_margin_end">14dp</dimen>
+    <dimen name="afs_md2_popup_elevation">3dp</dimen>
+    <dimen name="afs_md2_popup_text_size">34dp</dimen>
+    <dimen name="list_height_artist">60dp</dimen>
+    <dimen name="mtrl_slider_widget_height" tools:override="true">21dp</dimen>
+    <dimen name="mtrl_slider_track_side_padding" tools:override="true">0dp</dimen>
+    <dimen name="bottom_sheet_height">56dp</dimen>
+    <dimen name="top_app_bar_height">132dp</dimen>
+    <dimen name="preview_album_cover_start">24dp</dimen>
+    <dimen name="full_cover_elevation">8dp</dimen>
+    <dimen name="lyric_extra_line_height">3dp</dimen>
+    <dimen name="song_search_header_height">56dp</dimen>
+    <dimen name="artist_hero_height">340dp</dimen>
+    <dimen name="search_entity_round">24dp</dimen>
+    <dimen name="search_entity_square">4dp</dimen>
+    <item name="top_divider_visibility" format="float" type="dimen">1.0</item>
+</resources>

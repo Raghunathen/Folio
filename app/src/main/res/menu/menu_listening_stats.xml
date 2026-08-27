@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/refresh_stats"
+        android:title="@string/listening_stats_refresh"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/share_stats"
+        android:title="@string/listening_stats_share"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/backup_stats"
+        android:title="@string/listening_stats_backup_now"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/restore_stats"
+        android:title="@string/listening_stats_restore_backup"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/reset_stats"
+        android:title="@string/listening_stats_reset"
+        app:showAsAction="never" />
+</menu>

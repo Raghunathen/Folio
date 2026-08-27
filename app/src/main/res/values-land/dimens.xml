@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Landscape has far less height to give away - at the portrait height the hero would fill
+         the whole screen and push every song off it. -->
+    <dimen name="artist_hero_height">200dp</dimen>
+</resources>
