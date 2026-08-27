@@ -92,9 +92,11 @@ class HomeFragment : BaseFragment() {
         authors.forEach { authorWithBooks ->
             if (authorWithBooks.books.isEmpty()) return@forEach
             rows += HomeListItem.Header(authorWithBooks.author.name)
-            authorWithBooks.books.forEach { book ->
-                rows += HomeListItem.BookRow(book, authorWithBooks.author.name, progressFraction(book))
-            }
+            rows += HomeListItem.AuthorGrid(
+                authorWithBooks.books.map { book ->
+                    HomeListItem.BookRow(book, authorWithBooks.author.name, progressFraction(book))
+                }
+            )
         }
         adapter.submitList(rows)
         emptyText.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
