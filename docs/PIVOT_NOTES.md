@@ -270,6 +270,21 @@ service (see below):
       the new Listening Stats screen) was unreachable in the running app - `home_menu.xml` trimmed
       to Refresh/Collections/Settings (dropped stale music-era Equalizer/Exit items) and wired in
       `HomeFragment`.
+- [x] Auto-continue to next book in series: when a book finishes, `MainActivity`'s finished-dialog
+      handler now also looks up `BookDao.getNextInSeries(authorId, seriesName, seriesIndex)`
+      (lowest `seriesIndex` greater than the finished book's, same author + series name) and, if
+      found, adds a "Play Next: <title>" button to the existing "Finished!" dialog alongside the
+      plain OK button.
+- [x] Sleep timer upgraded from a plain minutes-only pause to match the original v1 spec:
+      `AudiobookPlayerController.scheduleSleepTimer()` now fades the player volume out over the
+      last 20s before pausing (instead of a hard stop), a new "End of Chapter" option computes the
+      remaining time from `Chapter.endMs`/`currentAbsolutePositionMs()`, and a new
+      `extendSleepTimer()` ("+10 Minutes" in the dialog) adds time to an already-running timer.
+      Also added shake-to-extend: `AudiobookPlaybackService` registers an accelerometer listener
+      (only while a sleep timer is active, to save battery) and calls `extendSleepTimer()` on a
+      debounced shake gesture, with a toast confirmation. New `MediaSession` custom commands
+      `COMMAND_SLEEP_TIMER_END_OF_CHAPTER`/`COMMAND_SLEEP_TIMER_EXTEND` wire this through
+      `PlayerViewModel`/`PlayerSheetFragment`.
 - [ ] Full build + on-device smoke test (including verifying M4B chapter parsing and the new
       widget against real audiobook files/devices) — **cannot be done by the agent; needs the
       user's physical device**.
