@@ -17,7 +17,7 @@ android {
         throw IllegalArgumentException("releaseType must not contain \"")
     }
 
-    namespace = "org.akanework.gramophone"
+    namespace = "com.raghu.folio"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
     ndkVersion = "28.0.13004108"
@@ -50,7 +50,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "music.venuchander.com"
+        applicationId = "com.raghu.folio"
         // Reasons to not support KK include me.zhanghai.android.fastscroll, WindowInsets for
         // bottom sheet padding, ExoPlayer requiring multidex for KK and poor SD card support
         // That said, supporting Android 5.0 barely costs any tech debt and we plan to keep support
@@ -58,19 +58,19 @@ android {
         // Bye bye android 12 - cuz blur
         minSdk = 31
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.0"
+        versionCode = 1
+        versionName = "0.1.0"
         buildConfigField(
             "String",
             "MY_VERSION_NAME",
-            "\"1.0\""
+            "\"0.1.0\""
         )
         buildConfigField(
             "String",
             "RELEASE_TYPE",
             "\"$releaseType\""
         )
-        setProperty("archivesBaseName", "Music-$versionName")
+        setProperty("archivesBaseName", "Folio-$versionName")
     }
 
     signingConfigs {

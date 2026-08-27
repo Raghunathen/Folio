@@ -110,7 +110,7 @@
     <string name="shuffle">Shuffle</string>
     <string name="repeat_mode">Repeat mode</string>
     <string name="unknown_playlist">Unknown playlist</string>
-    <string name="gramophone_crashed" translatable="false">Crash log</string>
+    <string name="folio_crashed" translatable="false">Crash log</string>
     <string name="crash_accord_version" translatable="false">Music version</string>
     <string name="crash_phone_model" translatable="false">Model</string>
     <string name="crash_phone_brand" translatable="false">Brand</string>
@@ -139,7 +139,7 @@
     <string name="settings_default_progress_bar_summary">Enable material styled progress bar</string>
     <string name="playlist_favourite">Favourite</string>
     <!-- Not translatable -->
-    <string name="app_name">Music</string>
+    <string name="app_name">Folio</string>
     <string name="default_time" translatable="false">0:00</string>
     <string name="upper_folder" translatable="false">..</string>
     <string name="now_playing">Now playing</string>

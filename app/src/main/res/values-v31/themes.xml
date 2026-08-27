@@ -5,5 +5,5 @@
 
     <style name="Night.Theme.Splash" parent="Base.Night.Theme.Splash" />
 
-    <style name="Theme.Gramophone" parent="Base.Theme.Gramophone" />
+    <style name="Theme.Folio" parent="Base.Theme.Folio" />
 </resources>

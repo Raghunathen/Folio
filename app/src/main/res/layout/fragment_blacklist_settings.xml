@@ -66,7 +66,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <org.akanework.gramophone.logic.ui.MyRecyclerView
+    <com.raghu.folio.logic.ui.MyRecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

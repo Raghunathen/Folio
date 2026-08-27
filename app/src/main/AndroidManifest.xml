@@ -33,7 +33,7 @@
         tools:node="remove" />
 
     <application
-        android:name=".logic.GramophoneApplication"
+        android:name=".logic.FolioApplication"
         android:allowBackup="true"
         android:appCategory="audio"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -44,7 +44,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Gramophone"
+        android:theme="@style/Theme.Folio"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="upside_down_cake">
 
@@ -53,7 +53,7 @@
             android:exported="false" />
 
         <service
-            android:name=".logic.GramophonePlaybackService"
+            android:name=".logic.FolioPlaybackService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService">

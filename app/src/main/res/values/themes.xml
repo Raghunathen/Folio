@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.Gramophone" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+    <style name="Base.Theme.Folio" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- fixes some UI issues on MIUI devices -->
         <item name="android:forceDarkAllowed">false</item>
         <!-- true edge-to-edge, no black bars in display notch -->
@@ -78,7 +78,7 @@
 
     <!--
       Applied on top of the base theme only when dynamic colors are active
-      (see GramophoneApplication's DynamicColorsOptions precondition). Redirects the
+      (see FolioApplication's DynamicColorsOptions precondition). Redirects the
       general-UI color tokens to the live Material3 attributes that DynamicColors patches.
     -->
     <style name="ThemeOverlay.App.Dynamic" parent="ThemeOverlay.Material3.DynamicColors.DayNight">
@@ -142,7 +142,7 @@
         <item name="marginRightSystemWindowInsets">false</item>
         <item name="android:elevation">0dp</item>
         <item name="paddingBottomSystemWindowInsets">false</item>
-        <item name="layout_behavior">org.akanework.gramophone.logic.ui.MyBottomSheetBehavior</item>
+        <item name="layout_behavior">com.raghu.folio.logic.ui.MyBottomSheetBehavior</item>
     </style>
 
     <style name="BottomPlayerCornerShape">
@@ -164,7 +164,7 @@
     </style>
 
     <style name="Base.Night.Theme.Splash" parent="Theme.SplashScreen">
-        <item name="postSplashScreenTheme">@style/Theme.Gramophone</item>
+        <item name="postSplashScreenTheme">@style/Theme.Folio</item>
         <item name="windowSplashScreenBackground">@color/contrast_colorBackground</item>
     </style>
 

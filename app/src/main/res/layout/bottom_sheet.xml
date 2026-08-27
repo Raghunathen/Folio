@@ -38,7 +38,7 @@
             app:layout_constraintStart_toEndOf="@id/stub_view"
             app:layout_constraintTop_toTopOf="parent">
 
-            <org.akanework.gramophone.ui.components.MarqueeTextView
+            <com.raghu.folio.ui.components.MarqueeTextView
                 android:id="@+id/preview_song_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -116,7 +116,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <org.akanework.gramophone.ui.components.BlendView
+    <com.raghu.folio.ui.components.BlendView
         android:id="@+id/blend"
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -125,7 +125,7 @@
         android:scrollbars="none" />
 
     <!-- Full Player -->
-    <org.akanework.gramophone.ui.components.FullBottomSheet
+    <com.raghu.folio.ui.components.FullBottomSheet
         android:id="@+id/full_player"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
