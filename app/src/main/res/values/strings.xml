@@ -161,6 +161,7 @@
     <string name="settings_category_audiobook_playback">Audiobook Playback</string>
     <string name="settings_skip_forward_seconds">Skip forward interval (seconds)</string>
     <string name="settings_skip_backward_seconds">Skip backward interval (seconds)</string>
+    <string name="widget_description">Shows the current audiobook with quick playback controls.</string>
     <string name="settings_content_based_color_summary">Enable album based color generation</string>
     <string name="settings_content_based_color">Content based colors</string>
     <string name="no_lyric_found">No lyric found</string>

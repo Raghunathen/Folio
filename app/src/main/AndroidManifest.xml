@@ -87,6 +87,20 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".widget.AudiobookWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.raghu.folio.widget.ACTION_PLAY_PAUSE" />
+                <action android:name="com.raghu.folio.widget.ACTION_SKIP_FORWARD" />
+                <action android:name="com.raghu.folio.widget.ACTION_SKIP_BACKWARD" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/audiobook_widget_info" />
+        </receiver>
+
         <!-- Hands the stats share card to whichever app the user picks. Not exported: the only
              way out is the read permission granted per-share on the chooser intent. -->
         <provider

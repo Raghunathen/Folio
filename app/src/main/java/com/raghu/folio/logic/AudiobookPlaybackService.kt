@@ -20,9 +20,13 @@ package com.raghu.folio.logic
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -40,6 +44,8 @@ import com.raghu.folio.logic.utils.audiobook.AudiobookPlayerController
 import com.raghu.folio.logic.utils.exoplayer.FolioMediaSourceFactory
 import com.raghu.folio.logic.utils.exoplayer.FolioRenderFactory
 import com.raghu.folio.ui.MainActivity
+import com.raghu.folio.widget.AudiobookWidgetProvider
+import com.raghu.folio.widget.WidgetStateStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,6 +86,17 @@ class AudiobookPlaybackService : MediaSessionService() {
     private lateinit var controller: AudiobookPlayerController
     private var mediaSession: MediaSession? = null
 
+    private val widgetProgressHandler = Handler(Looper.getMainLooper())
+    private val widgetProgressRunnable = object : Runnable {
+        override fun run() {
+            if (::player.isInitialized && player.isPlaying) {
+                WidgetStateStore.writePlaybackState(this@AudiobookPlaybackService, true, player.currentPosition)
+                AudiobookWidgetProvider.updateAllWidgets(this@AudiobookPlaybackService)
+            }
+            widgetProgressHandler.postDelayed(this, 20_000)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -101,6 +118,23 @@ class AudiobookPlaybackService : MediaSessionService() {
             )
             .build()
         controller = AudiobookPlayerController(this, player)
+
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                WidgetStateStore.writePlaybackState(this@AudiobookPlaybackService, isPlaying, player.currentPosition)
+                AudiobookWidgetProvider.updateAllWidgets(this@AudiobookPlaybackService)
+            }
+
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                WidgetStateStore.writeMetadata(
+                    this@AudiobookPlaybackService,
+                    mediaMetadata.title?.toString(),
+                    mediaMetadata.artist?.toString(),
+                )
+                AudiobookWidgetProvider.updateAllWidgets(this@AudiobookPlaybackService)
+            }
+        })
+        widgetProgressHandler.postDelayed(widgetProgressRunnable, 20_000)
 
         val sessionActivity = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java),
@@ -143,6 +177,13 @@ class AudiobookPlaybackService : MediaSessionService() {
                         .getBoolean("skip_silence", false)
                 )
                 controller.play()
+                WidgetStateStore.writeBookInfo(
+                    this@AudiobookPlaybackService,
+                    bookWithParts.book.bookId,
+                    bookWithParts.book.coverUri,
+                    bookWithParts.book.durationMs,
+                )
+                AudiobookWidgetProvider.updateAllWidgets(this@AudiobookPlaybackService)
             }
         }
     }
@@ -203,6 +244,7 @@ class AudiobookPlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        widgetProgressHandler.removeCallbacks(widgetProgressRunnable)
         controller.release()
         mediaSession?.run {
             player.release()
