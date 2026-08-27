@@ -226,11 +226,31 @@ service (see below):
 - [x] M4B embedded chapter parsing: `M4bChapterParser.kt` parses Nero-style `chpl` atoms
       (moov/udta/chpl, as written by `m4b-tool`) for single-file `.m4a`/`.m4b` books. QuickTime
       "chap" text-track chapters are NOT supported. Not yet verified against a real device file.
-- [ ] New UI polish (real cover art/placeholder generation, Author/Book library grid, Collections
-      screen) — Home screen is still plain text rows. ← **next**
-- [ ] Settings screen for new v1 features (custom skip intervals, volume boost), listening stats
-      UI.
-- [ ] Home screen widget.
-- [ ] New app icon.
-- [ ] Full build + on-device smoke test (including verifying M4B chapter parsing against a real
-      audiobook file).
+- [x] Cover art: `CoverPlaceholderGenerator` (Apple-Books-style initials tile) used whenever a
+      book has no `coverUri`; Coil3 (`ImageView.load`) used to load real covers in the Home list
+      and the player sheet. Player sheet also shows the book description when present.
+- [x] Settings: new "Audiobook Playback" category in `settings_audio.xml` with
+      `skip_forward_seconds`/`skip_backward_seconds` `SeekBarPreference`s (read by
+      `PlayerViewModel.skipForward()/skipBackward()` as their defaults); the pre-existing
+      `skip_silence` toggle is now actually applied — `AudiobookPlaybackService.loadBook()` reads
+      it and calls `controller.setSkipSilenceEnabled()` right after loading. Known limitation:
+      toggling `skip_silence` while a book is already playing only takes effect on the next
+      load, not live. **Volume boost (LoudnessEnhancer) was deliberately deferred** — wiring it
+      correctly requires tracking ExoPlayer's audio session id, which isn't stably available
+      until the audio renderer is enabled, and this can't be verified without a physical device.
+- [x] New book-themed app icon: replaced the old vinyl-record raster foreground with a vector
+      book glyph (`ic_launcher_foreground.xml`, white cover + indigo spine/bookmark notch) on an
+      indigo (`#3F51B5`) adaptive-icon background.
+- [x] Home screen widget (`com.raghu.folio.widget.AudiobookWidgetProvider`): cover, title/author,
+      progress bar, play/pause + skip ±seconds buttons. State is pushed from
+      `AudiobookPlaybackService` into a small `WidgetStateStore` (SharedPreferences) on
+      `onIsPlayingChanged`/`onMediaMetadataChanged`/book load, plus a 20s periodic tick while
+      playing (so the progress bar drifts along without per-second updates/battery cost); button
+      taps open a short-lived `MediaController` connection to send the command and release.
+- [ ] New UI polish (Author/Book library grid, Collections screen) — Home screen is still a
+      sectioned list of text rows, not a cover grid. ← **next candidate, not started**
+- [ ] Listening stats UI.
+- [ ] Full build + on-device smoke test (including verifying M4B chapter parsing and the new
+      widget against real audiobook files/devices) — **cannot be done by the agent; needs the
+      user's physical device**.
+
