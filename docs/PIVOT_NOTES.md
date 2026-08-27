@@ -131,11 +131,36 @@ SAF-URI-based book model.
 > the "remove music-only features" + "new UI" steps, once nothing references them anymore.
 > Verified with `gradle :app:compileDebugKotlin` (KSP/Room schema validation passes).
 
-### Scanning (not yet implemented)
-SAF folder picker over the Audiobooks root → walk `Author/Book/` two levels deep → build
-Author/Book/BookPart rows, read tags via Media3's `MetadataRetriever` (or direct ID3/M4B
-parsing already present in `FolioExtractorsFactory`/tag utils), look for sidecar metadata files,
-generate placeholder covers when none found.
+### Scanning
+
+Implemented in `com.raghu.folio.logic.utils.audiobook`:
+- **`AudiobookLibraryPrefs`** — persists the user-picked Audiobooks root tree `Uri` (call
+  `setRootUri` after an `ACTION_OPEN_DOCUMENT_TREE` result; it takes the persistable permission
+  grant too). No picker UI wired up yet — that's part of the UI rewrite step.
+- **`AudiobookScanner.scanLibrary(context)`** — the main entry point (suspend, runs on
+  `Dispatchers.IO`). Opens the root via `DocumentFile.fromTreeUri`, walks exactly two levels
+  (`Author/` → `Book/`), and for each book folder: lists audio files (mp3/m4a/m4b/aac/flac/ogg/
+  opus/wav/wma) sorted with the existing `AlphaNumericComparator` (so `part2` sorts before
+  `part10`), reads each file's duration via `MediaMetadataRetriever`, and builds `BookPart` rows
+  with cumulative `startOffsetMs`. Upserts `Author`/`Book` rows keyed by their (stable) folder
+  `Uri` so re-scans update in place, and removes authors/books no longer present on disk.
+  **Known v1 limitation**: `BookPart` rows are fully deleted+reinserted on every scan rather than
+  diffed, so a part's id isn't stable across rescans of an in-progress book — fine for now since
+  scans only happen on explicit user action, revisit once background rescans exist.
+- **`SeriesDetector`** — regex-based heuristic over sibling book folder names *within one
+  author* (e.g. `"Mistborn 1 - The Final Empire"`, `"Mistborn, Book 2: ..."`, `"01 - Title"`).
+  A series is only assigned if ≥2 sibling books share the same detected series text — a lone
+  book whose title happens to contain a number is left alone. Extend/replace this heuristic if
+  it proves too imprecise once tested against real libraries.
+- **`SidecarMetadataReader`** — looks in the book folder for `cover.jpg/png/webp`/`folder.*` art,
+  `metadata.json` (Audiobookshelf-style keys: title/author/narrator/description/series/
+  seriesIndex), a Calibre-style `*.opf` package XML (title/creator role="aut"|"nrt"/description/
+  `calibre:series(_index)` meta), and `desc.txt`/`description.txt` as a last-resort description.
+  Sidecar data always wins over folder-name-derived data when present.
+- **Not yet implemented**: real M4B/embedded chapter parsing (currently every book gets zero
+  chapters from `ChapterDao`, which is still fully playable/seekable via the progress bar - just
+  no chapter list yet); placeholder cover generation for books with no art (planned: initials on
+  a gradient, generated at UI-display time rather than stored as a file).
 
 ### Playback (not yet implemented)
 Adapt `FolioPlaybackService` (was `GramophonePlaybackService`) to build a single continuous
@@ -148,8 +173,10 @@ parts, expose chapter seeking, add sleep timer/skip-silence/speed persistence pe
 - [x] Renamed package/app to Folio; verified `gradle :app:compileDebugKotlin` succeeds.
 - [x] New Room schema (Author/Book/BookPart/Chapter/Bookmark/PlaybackProgress/Collection) added
       additively; build verified.
-- [ ] SAF-based Audiobooks folder scanner. ← **next**
-- [ ] Playback service rewrite (continuous multi-part books, chapters, speed, sleep timer).
+- [x] SAF-based Audiobooks folder scanner engine (`AudiobookScanner`/`SeriesDetector`/
+      `SidecarMetadataReader`/`AudiobookLibraryPrefs`); build verified. UI trigger (folder picker
+      screen) still needed - lands with the UI rewrite step.
+- [ ] Playback service rewrite (continuous multi-part books, chapters, speed, sleep timer). ← **next**
 - [ ] Remove music-only features (Genres, Lyrics, Dates-added).
 - [ ] New UI (Home shelves, Author/Book library, Book detail/player, Collections).
 - [ ] Bookmarks/sleep timer/series-detection/finished-state UI.
