@@ -285,7 +285,24 @@ service (see below):
       debounced shake gesture, with a toast confirmation. New `MediaSession` custom commands
       `COMMAND_SLEEP_TIMER_END_OF_CHAPTER`/`COMMAND_SLEEP_TIMER_EXTEND` wire this through
       `PlayerViewModel`/`PlayerSheetFragment`.
-- [ ] Full build + on-device smoke test (including verifying M4B chapter parsing and the new
-      widget against real audiobook files/devices) — **cannot be done by the agent; needs the
-      user's physical device**.
+- [x] Full build + on-device smoke test: user connected a physical device (arm64-v8a, API 36,
+      OnePlus/ColorOS) via adb. `gradle :app:assembleDebug` succeeded, `adb install -r` (after
+      disabling the device's package verifier, which was blocking sideloads) and `adb shell am
+      start` launched the app cleanly with no `FATAL EXCEPTION`/crash in logcat. A debug-only
+      "self-enforced StrictMode policy" dialog appears on this device but was traced to OEM
+      ColorOS system code (`com.oplus.uifirst.OplusUIFirstManager`), not app code — harmless.
+- [x] Preserve listening stats independent of file/book deletion: verified (no code change
+      needed) that `ListeningStat` has no foreign-key relationship to `Book`/`Author`, so deleting
+      an audiobook file and rescanning the library never removes its listening-stat rows.
+- [x] Weekly recap notification + expanded stats: new `WeeklyStatsWorker` (WorkManager
+      `CoroutineWorker`, first use of WorkManager + `POST_NOTIFICATIONS` in this project) runs
+      every 7 days and posts a notification summarizing the past week's listening time, gated by
+      a new "Weekly Recap Notification" toggle (default on) on the Listening Stats screen, which
+      also requests the `POST_NOTIFICATIONS` runtime permission on API 33+ when enabled. The
+      Listening Stats screen also gained 4 new rows: Past 7 Days / Past 30 Days / Past 6 Months /
+      Past Year, computed from the same `ListeningStatDao.getAll()` list already being fetched.
+- [x] Shake-to-extend sleep timer setting: the shake-to-extend gesture (built in the previous
+      slice) is now gated behind a new "Shake to Extend Sleep Timer" toggle in Audio settings,
+      **default OFF**. `AudiobookPlaybackService` re-evaluates its accelerometer registration live
+      when the setting changes via a `SharedPreferences` listener.
 
