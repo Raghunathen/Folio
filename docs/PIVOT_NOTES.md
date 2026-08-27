@@ -206,13 +206,16 @@ service (see below):
       silence) as a standalone controller; build verified.
 - [x] `AudiobookPlaybackService` (new `MediaSessionService`) wired around the playback core,
       registered alongside the old `FolioPlaybackService`; full `assembleDebug` verified.
-- [ ] Remove music-only UI (Genres, Lyrics, Dates-added, Song/Album/Artist/Playlist screens),
-      delete `FolioPlaybackService` + old DB entities (`MediaItem`/`Playlist`/`ListeningStat`),
-      and build a new Author/Book UI wired to `AudiobookPlaybackService`. This is a large,
-      breaking change done in one pass (see "why not wired into a service yet" above) - tracked
-      together with the "Build new UI" todo. ← **next**
-- [ ] New UI (Home shelves, Author/Book library, Book detail/player, Collections).
+- [x] Removed all music-only UI (fragments/adapters/components), old `FolioPlaybackService`,
+      old DB entities/DAOs (`MediaItem`/`Playlist`/`ListeningStat`), and their manifest entry.
+      Rewrote `LibraryViewModel`/`MainActivity` for the audiobook data model, and added a
+      minimal placeholder `HomeFragment` (SAF folder picker + flat scanned-book list, tapping a
+      book sends `COMMAND_LOAD_BOOK` to `AudiobookPlaybackService`). `gradle :app:compileDebugKotlin`
+      and `gradle :app:assembleDebug` both pass again.
+- [ ] New UI polish (Home shelves, Author/Book library grid, Book detail/player bottom sheet,
+      Collections screen) — HomeFragment above is intentionally bare-bones. ← **next**
 - [ ] Bookmarks/sleep timer/series-detection/finished-state UI.
 - [ ] Home screen widget.
 - [ ] New app icon.
+- [ ] M4B embedded chapter parsing (still stubbed - chapters always cleared on rescan).
 - [ ] Full build + on-device smoke test.
