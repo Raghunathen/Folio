@@ -19,29 +19,18 @@ package com.raghu.folio.ui
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.media3.common.MediaItem
-import com.raghu.folio.logic.data.db.entity.PlaylistWithMediaItem
-import com.raghu.folio.logic.utils.MediaStoreUtils
+import com.raghu.folio.logic.data.db.entity.AuthorWithBooks
+import com.raghu.folio.logic.data.db.entity.BookWithProgress
+import com.raghu.folio.logic.data.db.entity.CollectionWithBooks
 
 /**
  * LibraryViewModel:
- *   A ViewModel that contains library information.
- * Used across the application.
- *
- * @author AkaneTan, nift4
+ *   A ViewModel that contains audiobook library information (authors/books/collections).
+ * Used across the application. Replaces the old music-oriented (MediaStoreUtils-based) version.
  */
 class LibraryViewModel : ViewModel() {
-    val mediaItemList: MutableLiveData<List<MediaItem>> = MutableLiveData()
-    val albumItemList: MutableLiveData<List<MediaStoreUtils.Album>> = MutableLiveData()
-    val albumArtistItemList: MutableLiveData<List<MediaStoreUtils.Artist>> = MutableLiveData()
-    val artistItemList: MutableLiveData<List<MediaStoreUtils.Artist>> = MutableLiveData()
-    val genreItemList: MutableLiveData<List<MediaStoreUtils.Genre>> = MutableLiveData()
-    val dateItemList: MutableLiveData<List<MediaStoreUtils.Date>> = MutableLiveData()
-    val playlistList: MutableLiveData<List<MediaStoreUtils.Playlist>> = MutableLiveData()
-    val folderStructure: MutableLiveData<MediaStoreUtils.FileNode> = MutableLiveData()
-    val shallowFolderStructure: MutableLiveData<MediaStoreUtils.FileNode> = MutableLiveData()
-    val allFolderSet: MutableLiveData<Set<String>> = MutableLiveData()
-    val privatePlaylistList: MutableLiveData<List<PlaylistWithMediaItem>> = MutableLiveData()
-    val privateAlbumList: MutableList<MediaStoreUtils.Album> = mutableListOf()
-    var privatePlaylistId: Long = 0
+    val authorsWithBooks: MutableLiveData<List<AuthorWithBooks>> = MutableLiveData()
+    val allBooksWithProgress: MutableLiveData<List<BookWithProgress>> = MutableLiveData()
+    val continueListening: MutableLiveData<List<BookWithProgress>> = MutableLiveData()
+    val collections: MutableLiveData<List<CollectionWithBooks>> = MutableLiveData()
 }

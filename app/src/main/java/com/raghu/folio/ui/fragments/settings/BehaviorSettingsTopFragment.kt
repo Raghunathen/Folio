@@ -23,12 +23,10 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.net.toUri
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.SwitchPreferenceCompat
 import com.raghu.folio.R
 import com.raghu.folio.logic.hasScopedStorageWithMediaTypes
-import com.raghu.folio.logic.utils.ArtistImageStore
 import com.raghu.folio.ui.fragments.BasePreferenceFragment
 import com.raghu.folio.ui.fragments.BaseSettingFragment
 
@@ -38,30 +36,8 @@ class BehaviorSettingsFragment : BaseSettingFragment(R.string.settings_category_
 
 class BehaviorSettingsTopFragment : BasePreferenceFragment() {
 
-    // Artist photos live in Music/artists. Reading them as plain files stops working the moment
-    // that folder holds a .nomedia - MediaProvider drops its contents from the index and then
-    // hides from the app whatever it has not indexed - so the way to keep the photos hidden from
-    // gallery apps *and* readable here is a folder grant, which answers from the filesystem.
-    private val pickArtistImagesFolder = registerForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { treeUri ->
-        if (treeUri == null) return@registerForActivityResult
-        ArtistImageStore.rememberTree(requireContext(), treeUri)
-        updateArtistImagesSummary()
-        Toast.makeText(
-            requireContext(), R.string.settings_artist_images_folder_set, Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    private fun updateArtistImagesSummary() {
-        val preference = findPreference<Preference>("artist_images_folder") ?: return
-        preference.summary = ArtistImageStore.savedTreeLabel(requireContext())
-            ?: getString(R.string.settings_artist_images_folder_summary)
-    }
-
     override fun onResume() {
         super.onResume()
-        updateArtistImagesSummary()
         if (hasScopedStorageWithMediaTypes()) {
             val preference = findPreference<SwitchPreferenceCompat>("album_covers")!!
             preference.isPersistent = false
@@ -77,18 +53,6 @@ class BehaviorSettingsTopFragment : BasePreferenceFragment() {
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
-        if (preference.key == "artist_images_folder") {
-            pickArtistImagesFolder.launch(ArtistImageStore.initialPickerUri())
-        }
-        if (preference.key == "blacklist") {
-            val supportFragmentManager = requireActivity().supportFragmentManager
-            supportFragmentManager
-                .beginTransaction()
-                .addToBackStack(System.currentTimeMillis().toString())
-                .hide(supportFragmentManager.fragments.let { it[it.size - 1] })
-                .add(R.id.container, BlacklistSettingsFragment())
-                .commit()
-        }
         // Prior to Android 13, this changes a setting which changes MediaStoreUtils behaviour
         // Android 13 and later, this displays state of images permission granted/denied
         if (hasScopedStorageWithMediaTypes() && preference.key == "album_covers") {

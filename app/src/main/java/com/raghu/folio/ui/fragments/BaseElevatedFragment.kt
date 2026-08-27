@@ -61,10 +61,7 @@ abstract class BaseElevatedFragment(val wantsPlayer: Boolean? = null) : Fragment
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if (hidden) return
-        // see registerFragmentLifecycleCallbacks in MainActivity
-        if (wantsPlayer != null) {
-            (requireActivity() as MainActivity).playerBottomSheet.visible = wantsPlayer
-        }
+        // wantsPlayer is wired back up once the audiobook mini-player (PlayerBottomSheet
+        // rebuild) exists - see docs/PIVOT_NOTES.md.
     }
 }

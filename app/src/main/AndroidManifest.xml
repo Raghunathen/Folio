@@ -53,20 +53,6 @@
             android:exported="false" />
 
         <service
-            android:name=".logic.FolioPlaybackService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-                <action android:name="androidx.media3.session.MediaLibraryService" />
-                <action android:name="androidx.media3.session.MediaSessionService" />
-            </intent-filter>
-        </service>
-
-        <!-- New audiobook-specific service (see docs/PIVOT_NOTES.md) - not yet bound to by any
-             UI. Coexists with FolioPlaybackService until the old music UI is replaced. -->
-        <service
             android:name=".logic.AudiobookPlaybackService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"

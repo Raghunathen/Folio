@@ -60,94 +60,15 @@ import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import androidx.fragment.app.Fragment
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionCommand
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.color.MaterialColors
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import com.raghu.folio.BuildConfig
-import com.raghu.folio.R
-import com.raghu.folio.logic.FolioPlaybackService.Companion.SERVICE_GET_LYRICS
-import com.raghu.folio.logic.FolioPlaybackService.Companion.SERVICE_GET_SESSION
-import com.raghu.folio.logic.FolioPlaybackService.Companion.SERVICE_QUERY_TIMER
-import com.raghu.folio.logic.FolioPlaybackService.Companion.SERVICE_SET_TIMER
-import com.raghu.folio.logic.utils.MediaStoreUtils
-import com.raghu.folio.ui.LibraryViewModel
-import com.raghu.folio.ui.MainActivity
-import com.raghu.folio.ui.components.CustomTextView
-import com.raghu.folio.ui.components.FullBottomSheet
-import com.raghu.folio.ui.fragments.BaseWrapperFragment
-import com.raghu.folio.ui.fragments.settings.MainSettingsFragment
-import java.io.File
 import kotlin.reflect.KClass
-import kotlin.system.exitProcess
-
-fun Player.playOrPause() {
-    if (isPlaying) {
-        pause()
-    } else {
-        play()
-    }
-}
-
-// "Play next"/swipe-to-queue used to always insert right after the currently playing item, so
-// queuing song1 then song2 (while the same song keeps playing) put song2 - the most recent one -
-// ahead of song1. Track how many songs have been queued this way since the current item last
-// changed, so each one is inserted after the previous one instead of jumping ahead of it.
-//
-// Which song is playing is what identifies the batch, not the index it sits at. Reordering the
-// queue shifts indices around, so the index could come out unchanged across a track change -
-// carrying a finished batch's count into the next song, which then dropped a freshly swiped song
-// several slots down, behind songs nobody had queued - or change without one, restarting the
-// count mid-batch and letting a later swipe overtake an earlier one.
-private var lastQueueNextId: String? = null
-private var nextQueueOffset = 1
-
-private fun Player.resetQueueOffsetIfNeeded() {
-    val currentId = currentMediaItem?.mediaId
-    if (currentId != lastQueueNextId) {
-        lastQueueNextId = currentId
-        nextQueueOffset = 1
-    }
-}
-
-fun Player.queueNext(item: MediaItem) {
-    resetQueueOffsetIfNeeded()
-    addMediaItem((currentMediaItemIndex + nextQueueOffset).coerceAtLeast(0), item)
-    nextQueueOffset++
-}
-
-fun Player.queueNext(items: List<MediaItem>) {
-    if (items.isEmpty()) return
-    resetQueueOffsetIfNeeded()
-    addMediaItems((currentMediaItemIndex + nextQueueOffset).coerceAtLeast(0), items)
-    nextQueueOffset += items.size
-}
-
-// Claims the slot queueNext() would have used, for a caller whose song is already in the queue
-// and so moves into the slot instead of being inserted into it - the full player's queue page.
-fun Player.takeNextQueueSlot(): Int {
-    resetQueueOffsetIfNeeded()
-    return nextQueueOffset++
-}
-
-fun MediaItem.getUri(): Uri? {
-    return localConfiguration?.uri
-}
-
-fun MediaItem.getFile(): File? {
-    return getUri()?.toFile()
-}
 
 fun Activity.closeKeyboard(view: View) {
     if (ViewCompat.getRootWindowInsets(window.decorView)
@@ -269,30 +190,6 @@ inline fun Int.spToPx(context: Context): Int =
 inline fun Float.spToPx(context: Context): Float =
     TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, this, context.resources.displayMetrics)
 
-fun MediaController.getTimer(): Int =
-    sendCustomCommand(
-        SessionCommand(SERVICE_QUERY_TIMER, Bundle.EMPTY),
-        Bundle.EMPTY
-    ).get().extras.getInt("duration")
-
-// Milliseconds left until a positive-duration sleep timer fires (0 if none is running, or if
-// TIMER_PAUSE_ON_SONG_END is active instead - that one has no fixed duration to count down).
-// Computed on demand server-side from a stored start time, not ticked/polled to stay current.
-fun MediaController.getTimerRemaining(): Int =
-    sendCustomCommand(
-        SessionCommand(SERVICE_QUERY_TIMER, Bundle.EMPTY),
-        Bundle.EMPTY
-    ).get().extras.getInt("remaining")
-
-fun MediaController.hasTimer(): Boolean = getTimer() != 0
-fun MediaController.setTimer(value: Int) {
-    sendCustomCommand(
-        SessionCommand(SERVICE_SET_TIMER, Bundle.EMPTY).apply {
-            customExtras.putInt("duration", value)
-        }, Bundle.EMPTY
-    )
-}
-
 inline fun <reified T, reified U> HashMap<T, U>.putIfAbsentSupport(key: T, value: U) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         putIfAbsent(key, value)
@@ -302,24 +199,6 @@ inline fun <reified T, reified U> HashMap<T, U>.putIfAbsentSupport(key: T, value
             put(key, value)
     }
 }
-
-@Suppress("UNCHECKED_CAST")
-fun MediaController.getLyrics(): MutableList<MediaStoreUtils.Lyric>? =
-    sendCustomCommand(
-        SessionCommand(SERVICE_GET_LYRICS, Bundle.EMPTY),
-        Bundle.EMPTY
-    ).get().extras.let {
-        (BundleCompat.getParcelableArray(it, "lyrics", MediaStoreUtils.Lyric::class.java)
-                as Array<MediaStoreUtils.Lyric>?)?.toMutableList()
-    }
-
-fun MediaController.getSessionId(): Int? =
-    sendCustomCommand(
-        SessionCommand(SERVICE_GET_SESSION, Bundle.EMPTY),
-        Bundle.EMPTY
-    ).get().extras.getInt("session", C.AUDIO_SESSION_ID_UNSET).let {
-        if (it == C.AUDIO_SESSION_ID_UNSET) null else it
-    }
 
 // https://twitter.com/Piwai/status/1529510076196630528
 fun Handler.postAtFrontOfQueueAsync(callback: Runnable) {
@@ -566,10 +445,6 @@ tailrec fun Fragment.findParentFragmentByType(type: KClass<out Fragment>): Fragm
     }
 }
 
-fun Fragment.findBaseWrapperFragment(): BaseWrapperFragment? {
-    return findParentFragmentByType(BaseWrapperFragment::class) as? BaseWrapperFragment
-}
-
 fun Context.resourceUri(resourceId: Int): Uri = with(resources) {
     Uri.Builder()
         .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
@@ -577,153 +452,6 @@ fun Context.resourceUri(resourceId: Int): Uri = with(resources) {
         .appendPath(getResourceTypeName(resourceId))
         .appendPath(getResourceEntryName(resourceId))
         .build()
-}
-
-fun TextView.animateText(targetColor: Int, interpolator: TimeInterpolator) {
-    val colorAnimator = ValueAnimator.ofArgb(textColors.defaultColor, targetColor)
-    colorAnimator.addUpdateListener { animation ->
-        val animatedValue = animation.animatedValue as Int
-        setTextColor(animatedValue)
-    }
-    colorAnimator.doOnEnd {
-        setTextColor(targetColor)
-    }
-    colorAnimator.duration = FullBottomSheet.LYRIC_SCROLL_DURATION
-    colorAnimator.interpolator = interpolator
-    colorAnimator.start()
-}
-
-fun CustomTextView.resetShader(interpolator: TimeInterpolator) {
-    val colorAnimator = ValueAnimator.ofArgb(colors.first(), colors.last())
-    colorAnimator.addUpdateListener { animation ->
-        val animatedValue = animation.animatedValue as Int
-        val animatedFadeColors = intArrayOf(animatedValue, animatedValue, animatedValue, animatedValue, colors.last())
-        updateGradient(animatedFadeColors)
-        setProgress(currentProgress)
-    }
-    colorAnimator.doOnEnd {
-        setDefaultGradient()
-        setProgress(0f)
-    }
-    colorAnimator.duration = FullBottomSheet.LYRIC_SCROLL_DURATION
-    colorAnimator.interpolator = interpolator
-    colorAnimator.start()
-}
-
-fun View.scaleText(targetScale: Float, interpolator: TimeInterpolator) {
-    val animator = ValueAnimator.ofFloat(scaleX, targetScale)
-    animator.addUpdateListener { animation ->
-        val animatedValue = animation.animatedValue as Float
-        scaleX = animatedValue
-        scaleY = animatedValue
-    }
-    animator.doOnEnd {
-        scaleX = targetScale
-        scaleY = targetScale
-    }
-    animator.duration = FullBottomSheet.LYRIC_SCROLL_DURATION
-    animator.interpolator = interpolator
-    animator.start()
-}
-
-fun View.scaleText(scale: Float) {
-    scaleX = scale
-    scaleY = scale
-}
-
-@SuppressLint("StringFormatInvalid", "StringFormatMatches")
-fun MaterialToolbar.applyGeneralMenuItem(
-    fragment: Fragment,
-    libraryViewModel: LibraryViewModel
-) {
-    this.setOnMenuItemClickListener {
-        when (it.itemId) {
-            R.id.equalizer -> {
-                val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                    putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, fragment.requireContext().packageName)
-                    putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION,
-                        (fragment.requireActivity() as MainActivity).getPlayer()?.getSessionId())
-                    putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE,
-                        android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
-                }
-                try {
-                    (fragment.requireActivity() as MainActivity).startingActivity.launch(intent)
-                } catch (_: ActivityNotFoundException) {
-                    // Let's show a toast here if no system inbuilt EQ was found.
-                    Toast.makeText(
-                        fragment.requireContext(),
-                        R.string.equalizer_not_found,
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-
-            R.id.refresh -> {
-                val activity = fragment.requireActivity() as MainActivity
-                val playerLayout = activity.playerBottomSheet
-                activity.updateLibrary {
-                    val snackBar =
-                        Snackbar.make(
-                            fragment.requireView(),
-                            fragment.getString(
-                                R.string.refreshed_songs,
-                                libraryViewModel.mediaItemList.value!!.size,
-                            ),
-                            Snackbar.LENGTH_LONG,
-                        )
-                    snackBar.setAction(R.string.dismiss) {
-                        snackBar.dismiss()
-                    }
-
-                    /*
-                     * Let's override snack bar's color here so it would
-                     * adapt dark mode.
-                     */
-                    snackBar.setBackgroundTint(
-                        MaterialColors.getColor(
-                            snackBar.view,
-                            com.google.android.material.R.attr.colorSurface,
-                        ),
-                    )
-                    snackBar.setActionTextColor(
-                        MaterialColors.getColor(
-                            snackBar.view,
-                            com.google.android.material.R.attr.colorPrimary,
-                        ),
-                    )
-                    snackBar.setTextColor(
-                        MaterialColors.getColor(
-                            snackBar.view,
-                            com.google.android.material.R.attr.colorOnSurface,
-                        ),
-                    )
-
-                    // Set an anchor for snack bar.
-                    if (playerLayout.visible && playerLayout.actuallyVisible)
-                        snackBar.anchorView = playerLayout
-                    snackBar.show()
-                }
-            }
-
-            R.id.settings -> {
-                (fragment.requireActivity() as MainActivity).playerBottomSheet.shouldRetractBottomNavigation(true)
-                (fragment.requireActivity() as MainActivity).startFragment(MainSettingsFragment())
-            }
-
-            R.id.exit -> {
-                val activity = fragment.requireActivity() as MainActivity
-                // Stop the playback service (releases the player/session and notification)
-                // before tearing down the activity, then kill the process to make sure
-                // nothing is left running in the background.
-                activity.stopService(Intent(activity, FolioPlaybackService::class.java))
-                activity.finishAndRemoveTask()
-                exitProcess(0)
-            }
-
-            else -> throw IllegalStateException()
-        }
-        true
-    }
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -765,9 +493,9 @@ inline fun mayThrowForegroundServiceStartNotAllowed(): Boolean =
             Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2
 
 inline fun Sequence<View>.getTextViews(
-    crossinline action: (CustomTextView) -> Unit
+    crossinline action: (com.raghu.folio.ui.components.CustomTextView) -> Unit
 ) {
     this.forEach {
-        if (it is CustomTextView) action.invoke(it)
+        if (it is com.raghu.folio.ui.components.CustomTextView) action.invoke(it)
     }
 }

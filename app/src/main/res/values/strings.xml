@@ -143,6 +143,8 @@
     <string name="default_time" translatable="false">0:00</string>
     <string name="upper_folder" translatable="false">..</string>
     <string name="now_playing">Now playing</string>
+    <string name="choose_audiobooks_folder">Choose Audiobooks Folder</string>
+    <string name="no_books_found">No audiobooks found. Choose a folder to scan.</string>
     <string name="settings_content_based_color_summary">Enable album based color generation</string>
     <string name="settings_content_based_color">Content based colors</string>
     <string name="no_lyric_found">No lyric found</string>
