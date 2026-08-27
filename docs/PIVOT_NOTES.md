@@ -212,10 +212,25 @@ service (see below):
       minimal placeholder `HomeFragment` (SAF folder picker + flat scanned-book list, tapping a
       book sends `COMMAND_LOAD_BOOK` to `AudiobookPlaybackService`). `gradle :app:compileDebugKotlin`
       and `gradle :app:assembleDebug` both pass again.
-- [ ] New UI polish (Home shelves, Author/Book library grid, Book detail/player bottom sheet,
-      Collections screen) — HomeFragment above is intentionally bare-bones. ← **next**
-- [ ] Bookmarks/sleep timer/series-detection/finished-state UI.
+- [x] Home screen upgraded to a sectioned list: "Continue Listening" shelf + one section per
+      author, each row showing a progress bar (`item_home_header.xml` added).
+- [x] Shared `PlayerViewModel` (activity-scoped, single `MediaController` connection), mini-player
+      bar (`activity_main.xml`), and `PlayerSheetFragment` bottom sheet combining book detail +
+      full transport controls (play/pause, skip -15/+30, seekbar scrubbing via new
+      `COMMAND_SEEK_ABSOLUTE`, speed cycling, sleep timer dialog, add-bookmark dialog, chapters
+      list with tap-to-seek). `HomeFragment` now delegates playback to
+      `MainActivity.playBook(bookId)` instead of building its own throwaway `MediaController`.
+- [x] Finished-state detection: `AudiobookPlayerController` marks `PlaybackProgress.isFinished`
+      on `Player.STATE_ENDED`; `MainActivity` shows a "Finished!" confirmation dialog and
+      refreshes the library so the book drops out of Continue Listening.
+- [x] M4B embedded chapter parsing: `M4bChapterParser.kt` parses Nero-style `chpl` atoms
+      (moov/udta/chpl, as written by `m4b-tool`) for single-file `.m4a`/`.m4b` books. QuickTime
+      "chap" text-track chapters are NOT supported. Not yet verified against a real device file.
+- [ ] New UI polish (real cover art/placeholder generation, Author/Book library grid, Collections
+      screen) — Home screen is still plain text rows. ← **next**
+- [ ] Settings screen for new v1 features (custom skip intervals, volume boost), listening stats
+      UI.
 - [ ] Home screen widget.
 - [ ] New app icon.
-- [ ] M4B embedded chapter parsing (still stubbed - chapters always cleared on rescan).
-- [ ] Full build + on-device smoke test.
+- [ ] Full build + on-device smoke test (including verifying M4B chapter parsing against a real
+      audiobook file).
