@@ -7,6 +7,11 @@
         android:title="@string/home_menu_refresh"
         app:showAsAction="never" />
     <item
+        android:id="@+id/collections"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/home_menu_collections"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_settings"
         android:title="@string/home_menu_settings"

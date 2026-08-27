@@ -74,8 +74,10 @@ class MainActivity : AppCompatActivity() {
         val db = AppDatabase.getInstance(this)
         val authors = withContext(Dispatchers.IO) { db.authorDao().getAllAuthorsWithBooks() }
         val books = withContext(Dispatchers.IO) { db.bookDao().getAllBooksWithProgress() }
+        val collections = withContext(Dispatchers.IO) { db.collectionDao().getAllCollections() }
         libraryViewModel.authorsWithBooks.value = authors
         libraryViewModel.allBooksWithProgress.value = books
+        libraryViewModel.collections.value = collections
         libraryViewModel.continueListening.value = books.filter {
             it.progress != null && !it.progress.isFinished
         }

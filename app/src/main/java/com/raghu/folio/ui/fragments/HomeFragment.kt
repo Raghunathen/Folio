@@ -68,6 +68,15 @@ class HomeFragment : BaseFragment() {
                     (requireActivity() as MainActivity).updateLibrary()
                     true
                 }
+                R.id.collections -> {
+                    requireActivity().supportFragmentManager
+                        .beginTransaction()
+                        .addToBackStack(System.currentTimeMillis().toString())
+                        .hide(this)
+                        .add(R.id.container, CollectionsFragment())
+                        .commit()
+                    true
+                }
                 R.id.settings -> {
                     requireActivity().supportFragmentManager
                         .beginTransaction()

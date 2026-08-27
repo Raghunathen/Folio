@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButton
 import com.raghu.folio.R
 import com.raghu.folio.logic.data.db.AppDatabase
 import com.raghu.folio.logic.data.db.entity.Bookmark
+import com.raghu.folio.logic.data.db.entity.Collection
 import com.raghu.folio.ui.PlayerViewModel
 import com.raghu.folio.ui.adapters.ChapterAdapter
 import com.raghu.folio.ui.util.CoverPlaceholderGenerator
@@ -70,6 +71,7 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
         val speedButton: MaterialButton = view.findViewById(R.id.player_speed_button)
         val sleepTimerButton: MaterialButton = view.findViewById(R.id.player_sleep_timer_button)
         val bookmarkButton: MaterialButton = view.findViewById(R.id.player_bookmark_button)
+        val collectionButton: MaterialButton = view.findViewById(R.id.player_collection_button)
         val chaptersList: RecyclerView = view.findViewById(R.id.chapters_list)
 
         chapterAdapter = ChapterAdapter { chapter ->
@@ -126,6 +128,7 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
 
         sleepTimerButton.setOnClickListener { showSleepTimerDialog() }
         bookmarkButton.setOnClickListener { showAddBookmarkDialog() }
+        collectionButton.setOnClickListener { showAddToCollectionDialog() }
 
         loadChapters()
         loadBookDetails(coverView, descriptionView)
@@ -204,6 +207,62 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
                             createdAt = System.currentTimeMillis(),
                         )
                     )
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showAddToCollectionDialog() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val db = AppDatabase.getInstance(requireContext())
+            val collections = withContext(Dispatchers.IO) { db.collectionDao().getAllCollections() }
+            if (collections.isEmpty()) {
+                showCreateCollectionThenAdd()
+                return@launch
+            }
+            val memberIds = withContext(Dispatchers.IO) {
+                db.collectionDao().getCollectionIdsForBook(bookId)
+            }.toSet()
+
+            val names = collections.map { it.collection.name }.toTypedArray()
+            val checked = collections.map { memberIds.contains(it.collection.collectionId) }.toBooleanArray()
+
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.add_to_collection_dialog_title)
+                .setMultiChoiceItems(names, checked) { _, which, isChecked ->
+                    val collectionId = collections[which].collection.collectionId
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                        if (isChecked) {
+                            db.collectionDao().addBookToCollection(collectionId, bookId)
+                        } else {
+                            db.collectionDao().removeBookFromCollection(collectionId, bookId)
+                        }
+                    }
+                }
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(R.string.new_collection) { _, _ -> showCreateCollectionThenAdd() }
+                .show()
+        }
+    }
+
+    private fun showCreateCollectionThenAdd() {
+        val input = EditText(requireContext()).apply { hint = getString(R.string.new_collection_hint) }
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.new_collection)
+            .setView(input)
+            .setPositiveButton(R.string.new_collection) { _, _ ->
+                val name = input.text?.toString()?.trim().takeUnless { it.isNullOrEmpty() }
+                    ?: return@setPositiveButton
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val db = AppDatabase.getInstance(requireContext())
+                    withContext(Dispatchers.IO) {
+                        val collectionId = db.collectionDao().addCollection(
+                            Collection(name = name, coverUri = null, createdAt = System.currentTimeMillis())
+                        )
+                        db.collectionDao().addBookToCollection(collectionId, bookId)
+                    }
+                    showAddToCollectionDialog()
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)

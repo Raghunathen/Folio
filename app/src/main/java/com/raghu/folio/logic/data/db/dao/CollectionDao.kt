@@ -48,4 +48,10 @@ interface CollectionDao {
         """
     )
     fun removeBookFromCollection(collectionId: Long, bookId: Long)
+
+    @Query(
+        "SELECT `${CollectionBookCrossRef.COLLECTION_ID_COLUMN}` FROM `$COLLECTION_BOOK_CROSS_REF_TABLE_NAME` " +
+            "WHERE `${CollectionBookCrossRef.BOOK_ID_COLUMN}` = :bookId"
+    )
+    fun getCollectionIdsForBook(bookId: Long): List<Long>
 }

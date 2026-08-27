@@ -6,6 +6,7 @@
     <string name="home_menu_settings">Settings</string>
     <string name="home_menu_refresh">Refresh</string>
     <string name="home_menu_exit">Exit</string>
+    <string name="home_menu_collections">Collections</string>
     <string name="category_songs">Songs</string>
     <string name="category_albums">Albums</string>
     <string name="category_artists">Artists</string>
@@ -169,6 +170,14 @@
     <string name="listening_stats_streak_days_format">%1$d days</string>
     <string name="listening_stats_duration_hm">%1$d h %2$d min</string>
     <string name="listening_stats_duration_m">%1$d min</string>
+    <string name="collections_title">Collections</string>
+    <string name="new_collection">New Collection</string>
+    <string name="new_collection_hint">Collection name</string>
+    <string name="no_collections">No collections yet. Tap + to create one.</string>
+    <string name="collection_book_count">%1$d books</string>
+    <string name="collection_empty">No books in this collection yet</string>
+    <string name="add_to_collection">Collections</string>
+    <string name="add_to_collection_dialog_title">Add to collection</string>
     <string name="settings_content_based_color_summary">Enable album based color generation</string>
     <string name="settings_content_based_color">Content based colors</string>
     <string name="no_lyric_found">No lyric found</string>
