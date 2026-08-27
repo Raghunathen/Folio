@@ -16,8 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
-private val AUDIO_EXTENSIONS = setOf("mp4", "m4b", "flac", "wav")
-private val M4B_EXTENSIONS = setOf("mp4", "m4b")
+private val AUDIO_EXTENSIONS = setOf(
+    "mp3", "m4a", "m4b", "aac", "flac", "ogg", "opus", "wav", "wma"
+)
+private val M4B_EXTENSIONS = setOf("m4a", "m4b")
 
 data class ScanSummary(val authors: Int, val books: Int, val parts: Int)
 
