@@ -47,6 +47,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val author = MutableLiveData<String?>(null)
     val positionMs = MutableLiveData(0L)
     val durationMs = MutableLiveData(0L)
+    /** Set to the finished book's id once playback reaches the end; consumers should call
+     * [clearFinishedEvent] after handling it (e.g. showing a "finished!" dialog). */
+    val finishedEvent = MutableLiveData<Long?>(null)
 
     private val positionHandler = Handler(Looper.getMainLooper())
     private val positionRunnable = object : Runnable {
@@ -68,6 +71,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             title.value = mediaMetadata.title?.toString()
             author.value = mediaMetadata.artist?.toString()
         }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_ENDED) {
+                finishedEvent.value = currentBookId
+            }
+        }
+    }
+
+    fun clearFinishedEvent() {
+        finishedEvent.value = null
     }
 
     fun connect() {

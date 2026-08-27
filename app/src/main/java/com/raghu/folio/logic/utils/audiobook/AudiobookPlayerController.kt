@@ -43,6 +43,8 @@ class AudiobookPlayerController(
     /** Invoked (on the main thread) when an active sleep timer elapses and pauses playback. */
     var onSleepTimerElapsed: (() -> Unit)? = null
 
+    private var finishedNotified = false
+
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) {
@@ -50,6 +52,13 @@ class AudiobookPlayerController(
             } else {
                 progressSaveJob?.cancel()
                 saveProgressNow()
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_ENDED && !finishedNotified) {
+                finishedNotified = true
+                markFinished()
             }
         }
     }
@@ -73,6 +82,7 @@ class AudiobookPlayerController(
         this.book = book
         this.parts = parts
         this.chapters = chapters
+        this.finishedNotified = false
 
         val metadata = MediaMetadata.Builder()
             .setTitle(book.title)
@@ -178,6 +188,25 @@ class AudiobookPlayerController(
                 lastPlayedAt = now,
                 isFinished = false,
                 finishedAt = null,
+            )
+        }
+    }
+
+    private fun markFinished() {
+        val currentBook = book ?: return
+        val currentParts = parts
+        val partId = currentParts.lastOrNull()?.partId
+        val speed = player.playbackParameters.speed
+        val now = System.currentTimeMillis()
+        scope.launch(Dispatchers.IO) {
+            db.playbackProgressDao().upsertProgress(
+                bookId = currentBook.bookId,
+                positionMs = totalDurationMs(),
+                currentPartId = partId,
+                playbackSpeed = speed,
+                lastPlayedAt = now,
+                isFinished = true,
+                finishedAt = now,
             )
         }
     }

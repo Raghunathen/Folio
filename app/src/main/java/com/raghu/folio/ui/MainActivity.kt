@@ -17,6 +17,7 @@
 
 package com.raghu.folio.ui
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -122,6 +123,18 @@ class MainActivity : AppCompatActivity() {
             playerViewModel.currentBookId?.let { bookId ->
                 PlayerSheetFragment.newInstance(bookId).show(supportFragmentManager, "player_sheet")
             }
+        }
+
+        playerViewModel.finishedEvent.observe(this) { bookId ->
+            if (bookId == null) return@observe
+            val finishedTitle = playerViewModel.title.value ?: ""
+            AlertDialog.Builder(this)
+                .setTitle(R.string.book_finished_title)
+                .setMessage(getString(R.string.book_finished_message, finishedTitle))
+                .setPositiveButton(android.R.string.ok) { _, _ -> playerViewModel.clearFinishedEvent() }
+                .setOnCancelListener { playerViewModel.clearFinishedEvent() }
+                .show()
+            updateLibrary()
         }
     }
 
