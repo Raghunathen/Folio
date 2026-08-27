@@ -18,6 +18,13 @@
 package com.raghu.folio.logic
 
 import android.app.PendingIntent
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.SystemClock
+import android.widget.Toast
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -69,6 +76,8 @@ class AudiobookPlaybackService : MediaSessionService() {
         const val COMMAND_SET_SPEED = "audiobook_set_speed"
         const val COMMAND_SEEK_CHAPTER = "audiobook_seek_chapter"
         const val COMMAND_SLEEP_TIMER_START = "audiobook_sleep_timer_start"
+        const val COMMAND_SLEEP_TIMER_END_OF_CHAPTER = "audiobook_sleep_timer_end_of_chapter"
+        const val COMMAND_SLEEP_TIMER_EXTEND = "audiobook_sleep_timer_extend"
         const val COMMAND_SLEEP_TIMER_CANCEL = "audiobook_sleep_timer_cancel"
         const val COMMAND_SET_SKIP_SILENCE = "audiobook_set_skip_silence"
         const val COMMAND_SEEK_ABSOLUTE = "audiobook_seek_absolute"
@@ -80,11 +89,54 @@ class AudiobookPlaybackService : MediaSessionService() {
         const val EXTRA_MINUTES = "minutes"
         const val EXTRA_ENABLED = "enabled"
         const val EXTRA_POSITION_MS = "position_ms"
+
+        private const val SHAKE_THRESHOLD_G = 2.2f
+        private const val SHAKE_DEBOUNCE_MS = 1_500L
     }
 
     private lateinit var player: ExoPlayer
     private lateinit var controller: AudiobookPlayerController
     private var mediaSession: MediaSession? = null
+
+    private val sensorManager by lazy { getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    private var shakeListenerRegistered = false
+    private var lastShakeElapsedMs = 0L
+
+    /** While a sleep timer is running, a strong shake extends it by
+     *  [AudiobookPlayerController.SLEEP_TIMER_EXTEND_MINUTES] minutes - lets a listener bump the
+     *  timer without unlocking the phone. Not registered otherwise, to save battery. */
+    private val shakeListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val gX = event.values[0] / SensorManager.GRAVITY_EARTH
+            val gY = event.values[1] / SensorManager.GRAVITY_EARTH
+            val gZ = event.values[2] / SensorManager.GRAVITY_EARTH
+            val gForce = kotlin.math.sqrt(gX * gX + gY * gY + gZ * gZ)
+            if (gForce > SHAKE_THRESHOLD_G) {
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastShakeElapsedMs > SHAKE_DEBOUNCE_MS) {
+                    lastShakeElapsedMs = now
+                    controller.extendSleepTimer()
+                    Toast.makeText(this@AudiobookPlaybackService, R.string.sleep_timer_extended, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
+
+    /** Registers/unregisters [shakeListener] to match whether a sleep timer is currently active. */
+    private fun updateShakeListenerRegistration() {
+        val shouldListen = controller.isSleepTimerActive()
+        if (shouldListen && !shakeListenerRegistered) {
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
+                sensorManager.registerListener(shakeListener, it, SensorManager.SENSOR_DELAY_NORMAL)
+                shakeListenerRegistered = true
+            }
+        } else if (!shouldListen && shakeListenerRegistered) {
+            sensorManager.unregisterListener(shakeListener)
+            shakeListenerRegistered = false
+        }
+    }
 
     private val widgetProgressHandler = Handler(Looper.getMainLooper())
     private val widgetProgressRunnable = object : Runnable {
@@ -118,6 +170,7 @@ class AudiobookPlaybackService : MediaSessionService() {
             )
             .build()
         controller = AudiobookPlayerController(this, player)
+        controller.onSleepTimerElapsed = { updateShakeListenerRegistration() }
 
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -201,6 +254,8 @@ class AudiobookPlaybackService : MediaSessionService() {
                 .add(SessionCommand(COMMAND_SET_SPEED, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SEEK_CHAPTER, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SLEEP_TIMER_START, Bundle.EMPTY))
+                .add(SessionCommand(COMMAND_SLEEP_TIMER_END_OF_CHAPTER, Bundle.EMPTY))
+                .add(SessionCommand(COMMAND_SLEEP_TIMER_EXTEND, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SLEEP_TIMER_CANCEL, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SET_SKIP_SILENCE, Bundle.EMPTY))
                 .add(SessionCommand(COMMAND_SEEK_ABSOLUTE, Bundle.EMPTY))
@@ -232,6 +287,10 @@ class AudiobookPlaybackService : MediaSessionService() {
                 }
                 COMMAND_SLEEP_TIMER_START -> this@AudiobookPlaybackService.controller
                     .startSleepTimer(args.getInt(EXTRA_MINUTES, 30))
+                COMMAND_SLEEP_TIMER_END_OF_CHAPTER -> this@AudiobookPlaybackService.controller
+                    .startSleepTimerEndOfChapter()
+                COMMAND_SLEEP_TIMER_EXTEND -> this@AudiobookPlaybackService.controller
+                    .extendSleepTimer(args.getInt(EXTRA_MINUTES, AudiobookPlayerController.SLEEP_TIMER_EXTEND_MINUTES))
                 COMMAND_SLEEP_TIMER_CANCEL -> this@AudiobookPlaybackService.controller.cancelSleepTimer()
                 COMMAND_SET_SKIP_SILENCE -> this@AudiobookPlaybackService.controller
                     .setSkipSilenceEnabled(args.getBoolean(EXTRA_ENABLED, false))
@@ -239,12 +298,19 @@ class AudiobookPlaybackService : MediaSessionService() {
                     .seekToAbsoluteMs(args.getLong(EXTRA_POSITION_MS, 0L))
                 else -> return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED))
             }
+            if (customCommand.customAction.startsWith("audiobook_sleep_timer")) {
+                updateShakeListenerRegistration()
+            }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
     }
 
     override fun onDestroy() {
         widgetProgressHandler.removeCallbacks(widgetProgressRunnable)
+        if (shakeListenerRegistered) {
+            sensorManager.unregisterListener(shakeListener)
+            shakeListenerRegistered = false
+        }
         controller.release()
         mediaSession?.run {
             player.release()

@@ -56,6 +56,9 @@
     <string name="sleep_timer_30_min">In 30 Minutes</string>
     <string name="sleep_timer_45_min">In 45 Minutes</string>
     <string name="sleep_timer_1_hour">In 1 Hour</string>
+    <string name="sleep_timer_end_of_chapter">End of Chapter</string>
+    <string name="sleep_timer_extend_10_min">+10 Minutes</string>
+    <string name="sleep_timer_extended">Sleep timer extended by 10 minutes</string>
     <string name="sleep_timer_when_song_ends">When Current Song Ends</string>
     <string name="sleep_timer_pending">Pauses in %1$s</string>
     <string name="sleep_timer_pending_song_end">Pauses when this song ends</string>

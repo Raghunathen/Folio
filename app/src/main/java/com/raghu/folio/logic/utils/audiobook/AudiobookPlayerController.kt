@@ -41,7 +41,14 @@ class AudiobookPlayerController(
     private var chapters: List<Chapter> = emptyList()
     private var progressSaveJob: Job? = null
     private var sleepTimerJob: Job? = null
+    private var sleepTimerEndOfChapter = false
+    private var sleepTimerTargetElapsedMs: Long = 0L
     private var listeningAnchorElapsedMs: Long? = null
+
+    companion object {
+        private const val SLEEP_TIMER_FADE_MS = 20_000L
+        const val SLEEP_TIMER_EXTEND_MINUTES = 10
+    }
 
     /** Invoked (on the main thread) when an active sleep timer elapses and pauses playback. */
     var onSleepTimerElapsed: (() -> Unit)? = null
@@ -140,11 +147,54 @@ class AudiobookPlayerController(
         player.skipSilenceEnabled = enabled
     }
 
+    /** Pauses playback [minutes] from now, fading the volume out over the last
+     *  [SLEEP_TIMER_FADE_MS] before pausing. */
     fun startSleepTimer(minutes: Int) {
+        scheduleSleepTimer(minutes * 60_000L, endOfChapter = false)
+    }
+
+    /** Pauses playback at the end of the current chapter (or end of book if no chapter data),
+     *  fading the volume out over the last [SLEEP_TIMER_FADE_MS] before pausing. */
+    fun startSleepTimerEndOfChapter() {
+        val remainingMs = (currentChapter()?.endMs ?: totalDurationMs()) - currentAbsolutePositionMs()
+        scheduleSleepTimer(remainingMs.coerceAtLeast(1_000L), endOfChapter = true)
+    }
+
+    /** Adds [minutes] more time to an active sleep timer (e.g. shake/tap-to-extend gesture).
+     *  Switches an end-of-chapter timer into a plain minutes-based one. No-op if no timer is
+     *  running. */
+    fun extendSleepTimer(minutes: Int = SLEEP_TIMER_EXTEND_MINUTES) {
+        val remaining = sleepTimerRemainingMs() ?: return
+        scheduleSleepTimer(remaining + minutes * 60_000L, endOfChapter = false)
+    }
+
+    /** Milliseconds left before the active sleep timer pauses playback, or null if none active. */
+    fun sleepTimerRemainingMs(): Long? {
+        if (sleepTimerJob?.isActive != true) return null
+        return (sleepTimerTargetElapsedMs - SystemClock.elapsedRealtime()).coerceAtLeast(0L)
+    }
+
+    fun isSleepTimerEndOfChapter(): Boolean = sleepTimerEndOfChapter && isSleepTimerActive()
+
+    private fun scheduleSleepTimer(durationMs: Long, endOfChapter: Boolean) {
         sleepTimerJob?.cancel()
+        player.volume = 1f
+        sleepTimerEndOfChapter = endOfChapter
+        sleepTimerTargetElapsedMs = SystemClock.elapsedRealtime() + durationMs
         sleepTimerJob = scope.launch {
-            delay(minutes * 60_000L)
+            val fadeStartDelayMs = (durationMs - SLEEP_TIMER_FADE_MS).coerceAtLeast(0L)
+            delay(fadeStartDelayMs)
+            val fadeDurationMs = durationMs - fadeStartDelayMs
+            if (fadeDurationMs > 0) {
+                val steps = 20
+                val stepDelayMs = fadeDurationMs / steps
+                for (step in steps downTo 0) {
+                    player.volume = step / steps.toFloat()
+                    delay(stepDelayMs)
+                }
+            }
             pause()
+            player.volume = 1f
             onSleepTimerElapsed?.invoke()
         }
     }
@@ -152,6 +202,8 @@ class AudiobookPlayerController(
     fun cancelSleepTimer() {
         sleepTimerJob?.cancel()
         sleepTimerJob = null
+        sleepTimerEndOfChapter = false
+        player.volume = 1f
     }
 
     fun isSleepTimerActive(): Boolean = sleepTimerJob?.isActive == true

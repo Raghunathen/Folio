@@ -22,6 +22,8 @@ import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SET_SPEE
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SKIP_BACKWARD
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SKIP_FORWARD
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SLEEP_TIMER_CANCEL
+import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SLEEP_TIMER_END_OF_CHAPTER
+import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SLEEP_TIMER_EXTEND
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.COMMAND_SLEEP_TIMER_START
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.EXTRA_BOOK_ID
 import com.raghu.folio.logic.AudiobookPlaybackService.Companion.EXTRA_ENABLED
@@ -136,6 +138,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun startSleepTimer(minutes: Int) =
         sendCommand(COMMAND_SLEEP_TIMER_START, Bundle().apply { putInt(EXTRA_MINUTES, minutes) })
+
+    fun startSleepTimerEndOfChapter() = sendCommand(COMMAND_SLEEP_TIMER_END_OF_CHAPTER, Bundle.EMPTY)
+
+    /** Shake/tap-to-extend: adds more time to an already-running sleep timer. */
+    fun extendSleepTimer(minutes: Int = 10) =
+        sendCommand(COMMAND_SLEEP_TIMER_EXTEND, Bundle().apply { putInt(EXTRA_MINUTES, minutes) })
 
     fun cancelSleepTimer() = sendCommand(COMMAND_SLEEP_TIMER_CANCEL, Bundle.EMPTY)
 

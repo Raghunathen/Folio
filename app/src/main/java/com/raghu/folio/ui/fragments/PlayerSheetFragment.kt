@@ -174,15 +174,20 @@ class PlayerSheetFragment : BottomSheetDialogFragment() {
             getString(R.string.sleep_timer_30_min),
             getString(R.string.sleep_timer_45_min),
             getString(R.string.sleep_timer_1_hour),
+            getString(R.string.sleep_timer_end_of_chapter),
+            getString(R.string.sleep_timer_extend_10_min),
         )
-        val minutes = intArrayOf(0, 15, 30, 45, 60)
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.sleep_timer)
             .setItems(options) { _, which ->
-                if (minutes[which] == 0) {
-                    playerViewModel.cancelSleepTimer()
-                } else {
-                    playerViewModel.startSleepTimer(minutes[which])
+                when (which) {
+                    0 -> playerViewModel.cancelSleepTimer()
+                    1 -> playerViewModel.startSleepTimer(15)
+                    2 -> playerViewModel.startSleepTimer(30)
+                    3 -> playerViewModel.startSleepTimer(45)
+                    4 -> playerViewModel.startSleepTimer(60)
+                    5 -> playerViewModel.startSleepTimerEndOfChapter()
+                    6 -> playerViewModel.extendSleepTimer()
                 }
             }
             .show()
